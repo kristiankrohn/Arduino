@@ -92,6 +92,7 @@ int man_koktemp;
 int man_koktempC = 67;
 int man_mesktemp;
 int man_mesktempC = 67;
+int screen = 0;
 
 int s1 = 39;  //Pinout solenoidventiler
 int s2 = 40;
@@ -189,19 +190,13 @@ void menuNavigation() {
     menuPos = 3;
   }
 }
-int screen = 0;
-//int meskeTemp;
-//int kokeTemp;
-//int meskeTid;
-//int kokeTid = 90;
-//int meskeVolum = 40;
-//int skylleVolum = 35;
+
 
 int analogToCelcius(int analog) {
   //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
   float y5, y4, y3, y2, y1, y0, y;
   float x;
-  int celcius;
+
   //y = (6.821153642 * pow(10, -10) * pow(x, 5)) - (1.769379423 * pow(10, -6) * pow(x, 4)) + (1.800293103 * pow(10, -3) * pow(x, 3)) - (8.921113014 * pow(10, -1) * pow(x, 2))+ (213.5846863 * x) - 19535.88672;
   x = (float)analog;
 
@@ -213,15 +208,13 @@ int analogToCelcius(int analog) {
   y0 = 19535.88672;
   y = y5 - y4 + y3 - y2 + y1 - y0;
 
-  celcius = (int) y;
-  return celcius;
+  return (int) y;
 }
 
 int celciusToAnalog(int celcius) {
   //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
   float y7, y6, y5, y4, y3, y2, y1, y0, y;
   float x;
-  int analog;
   x = (float)celcius;
 
   y7 = 7.989214793 * pow(10, -10) * pow(x, 7);
@@ -234,8 +227,7 @@ int celciusToAnalog(int celcius) {
   y0 = 138.9718901;
   y = y7 - y6 + y5 - y4 + y3 - y2 + y1 - y0;
 
-  celcius = (int) y;
-  return celcius;
+  return (int) y;
 }
 
 int MeskSetC;
