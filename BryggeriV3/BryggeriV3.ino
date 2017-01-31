@@ -94,6 +94,11 @@ int man_mesktemp;
 int man_mesktempC = 67;
 int screen = 0;
 
+int mellomsteg_knapp = 32;
+int mellomstegpower = 30;
+int mellomstegretning = 29;
+
+int s0 = 31;
 int s1 = 39;  //Pinout solenoidventiler
 int s2 = 40;
 int s3 = 41;
@@ -1005,7 +1010,8 @@ void print_time2() //Fjern etter testing
 void solenoid() {
   bool c;
   c = digitalRead(5);
-  if (!c) {
+  if (!c) { // Manuell ventilkjøring
+    digitalWrite(s0, HIGH);
     digitalWrite(s1, HIGH);   //AKTIV LAV
     digitalWrite(s2, HIGH);
     digitalWrite(s3, HIGH);
@@ -1015,10 +1021,19 @@ void solenoid() {
     digitalWrite(s7, HIGH);
     digitalWrite(s8, HIGH);
     digitalWrite(s9, HIGH);
+    digitalWrite(mellomstegpower, LOW);
+
+    if(digitalRead(mellomsteg_knapp) == true){
+      digitalWrite(mellomstegretning, LOW);
+    }
+    else{
+      digitalWrite(mellomstegretning, HIGH);
+    }
 
   }
   else {
     if (Steg == 1) { // FYLLE VANN I KOKETANK
+      digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
       digitalWrite(s3, HIGH);
@@ -1031,6 +1046,7 @@ void solenoid() {
     }
 
     else if (Steg == 2) { // VARME VANN TIL STRIKETEMP
+      digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, LOW);
       digitalWrite(s3, HIGH);
@@ -1043,6 +1059,7 @@ void solenoid() {
     }
 
     else if (Steg == 3) { // STRIKE
+      digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, LOW);
       digitalWrite(s3, HIGH);
@@ -1054,6 +1071,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
     else if (Steg == 4) { // LUFTING
+      digitalWrite(s0, LOW);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
       digitalWrite(s3, LOW);
@@ -1065,6 +1083,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
     else if (Steg == 5) { // MESK
+      digitalWrite(s0, LOW);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
       digitalWrite(s3, HIGH);
@@ -1077,6 +1096,7 @@ void solenoid() {
     }
 
     else if (Steg == 6) { //SKYLLING
+      digitalWrite(s0, LOW);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
       digitalWrite(s3, LOW);
@@ -1089,6 +1109,7 @@ void solenoid() {
     }
 
     else if (Steg == 7) { //AVRENNING
+      digitalWrite(s0, LOW);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
       digitalWrite(s3, HIGH);
@@ -1101,6 +1122,7 @@ void solenoid() {
     }
 
     else if (Steg == 8) { //OPPKOK
+      digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, LOW);
       digitalWrite(s3, HIGH);
@@ -1113,6 +1135,7 @@ void solenoid() {
     }
 
     else if (Steg == 9) { //KOKING
+      digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, LOW);
       digitalWrite(s3, HIGH);
@@ -1125,6 +1148,7 @@ void solenoid() {
     }
 
     else if (Steg == 10) { //NEDKJØLING
+      digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
       digitalWrite(s3, HIGH);
@@ -1137,6 +1161,7 @@ void solenoid() {
     }
 
     else {
+      digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
       digitalWrite(s3, HIGH);
@@ -1331,8 +1356,12 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   pinMode(varmePin, OUTPUT);  // Varmelement
   resetindicator = 0;   // Debug indicator
 
+
+  pinMode(mellomstegpower, OUTPUT);
+  pinMode(mellomstegretning, OUTPUT);
   pinMode(regventpower, OUTPUT);
   pinMode(regventretning, OUTPUT);
+  pinMode(s0, OUTPUT);
   pinMode(s1, OUTPUT); // Solenoid Ventiler
   pinMode(s2, OUTPUT);
   pinMode(s3, OUTPUT);
@@ -1342,7 +1371,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   pinMode(s7, OUTPUT);
   pinMode(s8, OUTPUT);
   pinMode(s9, OUTPUT);
-
+  digitalWrite(s0, HIGH);
   digitalWrite(s1, HIGH);   //AKTIV LAV
   digitalWrite(s2, HIGH);
   digitalWrite(s3, HIGH);
@@ -1354,6 +1383,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   digitalWrite(s9, HIGH);
 
   Start = false;
+  pinMode(mellomsteg_knapp, INPUT_PULLUP);
   pinMode(lokkButtonpin, INPUT_PULLUP);
   pinMode(buttonpin, INPUT_PULLUP); //Pumpeknapp
   pinMode(5, INPUT_PULLUP); // AUTO-MAN knapp
