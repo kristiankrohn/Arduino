@@ -72,6 +72,7 @@ bool manmesk = false;
 bool Start;
 bool mesketankTom = false;
 bool mellomstegTom = false;
+bool luftemellomsteg = false;
 int resetindicator;
 int Steg;
 int meskevolum = 40;  // FJERN TILORDNING ETTER TESTING
@@ -84,7 +85,7 @@ int pitchtemp = 556; // HUSK Å KALIBRERE DENNE
 int kokepunkt = 667; // HUSK Å KALIBRERE DENNE
 int mesketid = 90;
 int koketid = 90;
-int avrenningstid = 15; //Minutter
+int avrenningstid = 5; //Minutter
 const float pumpekonstant = 14.25; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
 int MeskSet = 631;
 int regventpower = 33;
@@ -406,16 +407,16 @@ void writeSkjermbuffer() {
         else if (Steg == 6) {
           stringSteg = "Skylling";
         }
-        else if (Steg == 7) {
+        else if (Steg == (7||8||9||10)) {
           stringSteg = "Avrenning";
         }
-        else if (Steg == 8) {
+        else if (Steg == 11) {
           stringSteg = "Oppkok";
         }
-        else if (Steg == 9) {
+        else if (Steg == 12) {
           stringSteg = "Koking";
         }
-        else if (Steg == 10) {
+        else if (Steg == 13) {
           stringSteg = "Nedkjøling";
         }
         Start = true;
@@ -477,6 +478,7 @@ void writeSkjermbuffer() {
       break;
     case 37: {
         //I2C test
+        getSensordata();
         String mesketankTomstring = String(mesketankTom);
         String mellomstegTomstring = String(mellomstegTom);
         printString(String("Mesketank = " + mesketankTomstring), 1);
@@ -484,6 +486,7 @@ void writeSkjermbuffer() {
       }
       break;  
     case 40: {
+        
         String analog0 = String(analogRead(0));
         printString(String("Analog 0 = " + analog0), 1);
       }
@@ -772,6 +775,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (Start == true) {
       Steg = 1;
       tick = 0;
+      screen = 7;
       Serial.println("Steg 1");
     }
   }
@@ -888,12 +892,14 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       timer.setCounter(0, t2, i2, timer.COUNT_DOWN, timerComplete);
       timer.start();
       init_reguleringsventil();
+      init_mellomstegsventil();
     }
   }
 
   else if ((Steg == 6) && (Start == true)) {
     // Skylling
     opneRegvent();
+    mellomstegsventil(600);
     if (skyllFerdig) {
       Steg = 7;
       Serial.println("Steg 6"); //Pulse pumpe
@@ -924,6 +930,38 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (avrenningFerdig == true) {
       Steg = 8;
       Serial.println("Steg 7");
+  
+    }
+  }
+//8. Renne resten ned i mellomsteg
+  else if ((Steg == 8) && (Start == true)){
+    getSensordata();
+    Pumpe = false;
+    
+    if(mesketankTom == true){
+      Steg = 9;
+      init_mellomstegsventil();
+      //Oppsett timer lufting
+      timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
+      timer.start();
+    }
+    
+  }
+//9. Lufte mellomsteg
+  else if ((Steg == 9) && (Start == true)){
+    mellomstegsventil(5000);
+    if(luftemellomsteg == true){
+      Steg = 10;
+    }
+    
+  }
+//10. pumpe opp fra mellomsteg
+  else if ((Steg == 10) && (Start == true)){
+    getSensordata();
+    Pumpe = true;
+
+    if(mellomstegTom = true){
+      Steg = 11;
       int t4 = 0, i4 = 0;
       if (koketid >= 60) {
         t4 = koketid / 60; //Timer
@@ -936,30 +974,30 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       timer.setCounter(t4, i4, 0, timer.COUNT_DOWN, timerComplete);
       //Oppsett av timer for koking
     }
+    
   }
-
-  else if ((Steg == 8) && (Start == true)) {
+  else if ((Steg == 11) && (Start == true)) {
     // Koking
-
+    lukkemellomstegsventil();
     if (Input >= kokepunkt) { //koketanktemp == Input
       timer.start();
-      Steg = 9;
+      Steg = 12;
       Serial.println("Steg 8");
     }
 
   }
 
-  else if ((Steg == 9) && (Start == true)) {
+  else if ((Steg == 12) && (Start == true)) {
 
     if (kokFerdig == true) {
-      Steg = 10;
+      Steg = 13;
       Serial.println("Steg 9");
       Pumpe = false;
 
     }
   }
 
-  else if ((Steg == 10) && (Start == true)) {
+  else if ((Steg == 13) && (Start == true)) {
     // Nedkjøling
 
     if (Input < pitchtemp) { //Input == koketanktemp
@@ -972,6 +1010,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       kokFerdig = false;
       Start = false;
       luftingFerdig = false;
+      luftemellomsteg = false;
     }
   }
 
@@ -1003,7 +1042,10 @@ void timerComplete() {
   if (Steg == 7) {
     avrenningFerdig = true;
   }
-  if (Steg == 9) {
+  if (Steg == 9){
+    luftemellomsteg = true;
+  }
+  if (Steg == 12) {
     kokFerdig = true;
     Serial.println("Kok ferdig!");
   }
@@ -1131,8 +1173,44 @@ void solenoid() {
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
     }
-
-    else if (Steg == 8) { //OPPKOK
+ 
+    else if (Steg == 8){
+      digitalWrite(s0, LOW);
+      digitalWrite(s1, HIGH);   //AKTIV LAV
+      digitalWrite(s2, HIGH);
+      digitalWrite(s3, HIGH);
+      digitalWrite(s4, HIGH);
+      digitalWrite(s5, HIGH);
+      digitalWrite(s6, HIGH);
+      digitalWrite(s7, HIGH);
+      digitalWrite(s8, HIGH);
+      digitalWrite(s9, HIGH);      
+    }
+    else if (Steg == 9){
+      digitalWrite(s0, LOW);
+      digitalWrite(s1, LOW);   //AKTIV LAV
+      digitalWrite(s2, HIGH);
+      digitalWrite(s3, LOW);
+      digitalWrite(s4, LOW);
+      digitalWrite(s5, HIGH);
+      digitalWrite(s6, HIGH);
+      digitalWrite(s7, LOW);
+      digitalWrite(s8, HIGH);
+      digitalWrite(s9, HIGH);      
+    }
+    else if (Steg == 10){
+      digitalWrite(s0, HIGH);
+      digitalWrite(s1, LOW);   //AKTIV LAV
+      digitalWrite(s2, HIGH);
+      digitalWrite(s3, LOW);
+      digitalWrite(s4, LOW);
+      digitalWrite(s5, HIGH);
+      digitalWrite(s6, HIGH);
+      digitalWrite(s7, LOW);
+      digitalWrite(s8, HIGH);
+      digitalWrite(s9, HIGH);      
+    }
+    else if (Steg == 11) { //OPPKOK
       digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, LOW);
@@ -1145,7 +1223,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
 
-    else if (Steg == 9) { //KOKING
+    else if (Steg == 12) { //KOKING
       digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, LOW);
@@ -1158,7 +1236,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
 
-    else if (Steg == 10) { //NEDKJØLING
+    else if (Steg == 13) { //NEDKJØLING
       digitalWrite(s0, HIGH);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1274,7 +1352,7 @@ void pulsepumpe() {
   if ((Now - pumpeStartTime) > 10000) { //time to shift the Relay Window
     pumpeStartTime += 10000;
   }
-  if (6000 > Now - pumpeStartTime) {
+  if (5000 > Now - pumpeStartTime) {
     Pumpe = true;
   }
 
@@ -1283,24 +1361,27 @@ void pulsepumpe() {
   }
 }
 
-void init_pulseventil() {
+void init_mellomstegsventil() {
   pulseventilStartTime = millis();
 }
 
-void pulseventil(int ventil) {
+void mellomstegsventil(int aapningstid) {
   unsigned long Now = millis();
-  if ((Now - pulseventilStartTime) > 6000) { //time to shift the Relay Window
-    pulseventilStartTime += 6000;
-  }
-  if (3000 > Now - pulseventilStartTime) {
-    digitalWrite(ventil, HIGH);
+  if ((Now - pulseventilStartTime) > aapningstid) { //time to shift the Relay Window
+    digitalWrite(mellomstegpower, LOW);
+    digitalWrite(mellomstegretning, LOW);
   }
 
   else {
-    digitalWrite(ventil, LOW);
+    digitalWrite(mellomstegpower, HIGH);
+    digitalWrite(mellomstegretning, HIGH);
   }
 }
 
+void lukkemellomstegsventil(){
+  digitalWrite(mellomstegpower, LOW);
+  digitalWrite(mellomstegretning, HIGH);
+}
 
 void pumpe() {
   button = digitalRead(buttonpin);
@@ -1356,28 +1437,25 @@ void lokk() {
   }
 }
 
-void init_i2c(){
-  Wire.begin(8);
-  Wire.onReceive(handleI2c);
-}
 
-void handleI2c(int lengthOfMsg){
-  while(1 < Wire.available()){
-    mesketankTom = Wire.read();
-  }
+void getSensordata(){
+  Wire.requestFrom(9, 3);
+  int analogread = Wire.read();
   mellomstegTom = Wire.read();
+  mesketankTom = Wire.read();
 }
 
 void setup() {//SETUP           SETUP           SETUP           SETUP           SETUP            SETUP            SETUP
   Ethernet.begin(mac, ip, dns, gateway, subnet);
   Serial.begin(9600);
+  Wire.begin(8);
   pinMode(pumpePin, OUTPUT);
   pinMode(lokkPin, OUTPUT);
   digitalWrite(pumpePin, HIGH);
   digitalWrite(lokkPin, HIGH);
   pinMode(varmePin, OUTPUT);  // Varmelement
   resetindicator = 0;   // Debug indicator
-  init_i2c();
+
 
   pinMode(mellomstegpower, OUTPUT);
   pinMode(mellomstegretning, OUTPUT);
@@ -1453,6 +1531,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   timer.setCounter(0, 0, 1, timer.COUNT_DOWN, timerComplete);
   timer.start();
   timer.setInterval(print_time2, 1000);
+
 }
 
 
@@ -1465,7 +1544,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   timer.run();
   //Serial.println(resetindicator);
   //resetindicator++;
-
+  
   //lcdLoop();
   Input = koktemp();
   sekvens();
@@ -1476,21 +1555,12 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   //Serial.println(tick);
   Setpoint = Setpunkt(Steg, MeskSet, striketemp);
   varmeReg();
-  /* myPID.Compute();
 
-    /************************************************
-      turn the output pin on/off based on pid output
-    ************************************************
-  */  
     unsigned long now = millis();
     if(now - windowStartTime>100)
     { //time to shift the Relay Window
      lcdLoop(); 
      windowStartTime += 100;
     }
-    /*
-    if(Output > now - windowStartTime) digitalWrite(RelayPin,HIGH);
-    else digitalWrite(RelayPin,LOW);
-  */
 
 }
