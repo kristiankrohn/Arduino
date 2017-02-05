@@ -70,6 +70,8 @@ bool luftingFerdig = false;
 bool mankok = false;
 bool manmesk = false;
 bool Start;
+bool mesketankTom = false;
+bool mellomstegTom = false;
 int resetindicator;
 int Steg;
 int meskevolum = 40;  // FJERN TILORDNING ETTER TESTING
@@ -288,7 +290,7 @@ void writeSkjermbuffer() {
             man_tick = 0;
           }
           else if (menuPos == 3) {
-            //screen = 37; // Fjern kommentar for å kunne gå inn i fjerde linje på manuellvalg
+            screen = 37; // Fjern kommentar for å kunne gå inn i fjerde linje på manuellvalg
           }
         }
         else if (screen == 31) {
@@ -435,6 +437,7 @@ void writeSkjermbuffer() {
         printString("Koketank", 0);
         printString("Mesketank", 1);
         printString("Vannfylling", 2);
+        printString("Bustest", 3);
         printArrow();
       }
       break;
@@ -472,6 +475,14 @@ void writeSkjermbuffer() {
         printString(String("Volum: " + manvolum), 1);
       }
       break;
+    case 37: {
+        //I2C test
+        String mesketankTomstring = String(mesketankTom);
+        String mellomstegTomstring = String(mellomstegTom);
+        printString(String("Mesketank = " + mesketankTomstring), 1);
+        printString(String("Mellomsteg = " + mellomstegTomstring), 2);
+      }
+      break;  
     case 40: {
         String analog0 = String(analogRead(0));
         printString(String("Analog 0 = " + analog0), 1);
@@ -567,7 +578,7 @@ void lcdInit() {
   printString("    Laget av:", 1);
   printString("Krohn & Hoel Eng.", 2);
   printBuffer(skjermbuffer);
-  delay(5000);
+  delay(3000);
 }
 
 void lcdLoop() {
@@ -724,7 +735,7 @@ int koktemp() {
 int Setpunkt(int Steg, int MeskSet, int striketemp) {
   int Setpunkt;
   int meskset;
-  int k = 1023;
+  int k = 1024;
 
   meskset = MeskSet + 2;
 
@@ -1345,6 +1356,17 @@ void lokk() {
   }
 }
 
+void init_i2c(){
+  Wire.begin(8);
+  Wire.onReceive(handleI2c);
+}
+
+void handleI2c(int lengthOfMsg){
+  while(1 < Wire.available()){
+    mesketankTom = Wire.read();
+  }
+  mellomstegTom = Wire.read();
+}
 
 void setup() {//SETUP           SETUP           SETUP           SETUP           SETUP            SETUP            SETUP
   Ethernet.begin(mac, ip, dns, gateway, subnet);
@@ -1355,7 +1377,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   digitalWrite(lokkPin, HIGH);
   pinMode(varmePin, OUTPUT);  // Varmelement
   resetindicator = 0;   // Debug indicator
-
+  init_i2c();
 
   pinMode(mellomstegpower, OUTPUT);
   pinMode(mellomstegretning, OUTPUT);
@@ -1397,7 +1419,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   Setpoint = 100;
 
   varmeStartTime = 0;
-  //windowStartTime = millis();
+  windowStartTime = millis();
   //tell the PID to range between 0 and the full window size
   // myPID.SetOutputLimits(0, WindowSize);
 
@@ -1444,7 +1466,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   //Serial.println(resetindicator);
   //resetindicator++;
 
-  lcdLoop();
+  //lcdLoop();
   Input = koktemp();
   sekvens();
   solenoid();
@@ -1459,11 +1481,14 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
     /************************************************
       turn the output pin on/off based on pid output
     ************************************************
+  */  
     unsigned long now = millis();
-    if(now - windowStartTime>WindowSize)
+    if(now - windowStartTime>100)
     { //time to shift the Relay Window
-     windowStartTime += WindowSize;
+     lcdLoop(); 
+     windowStartTime += 100;
     }
+    /*
     if(Output > now - windowStartTime) digitalWrite(RelayPin,HIGH);
     else digitalWrite(RelayPin,LOW);
   */
