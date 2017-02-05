@@ -337,7 +337,7 @@ void writeSkjermbuffer() {
     case 0: {
         printString("Start brygging", 0);
         printString("Vaskeprogram", 1);
-        printString("Manuell tempreg", 2);
+        printString("Manuellkjøring", 2);
         printString("Kalibrering", 3);
         printArrow();
       }
@@ -435,8 +435,8 @@ void writeSkjermbuffer() {
       }
       break;
     case 30: {
-        printString("Koketank", 0);
-        printString("Mesketank", 1);
+        printString("TmpRegKok", 0);
+        printString("TmpRegMesk", 1);
         printString("Vannfylling", 2);
         printString("Bustest", 3);
         printArrow();
@@ -1076,7 +1076,7 @@ void solenoid() {
     digitalWrite(s9, HIGH);
     digitalWrite(mellomstegpower, LOW);
 
-    if(digitalRead(mellomsteg_knapp) == true){
+    if(digitalRead(mellomsteg_knapp) == false){
       digitalWrite(mellomstegretning, LOW);
     }
     else{
@@ -1492,6 +1492,9 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   attachInterrupt(digitalPinToInterrupt(flowMeter), flowtick, RISING);
   digitalWrite(regventpower, HIGH);
   digitalWrite(regventretning, HIGH);
+  digitalWrite(mellomstegpower, HIGH);
+  digitalWrite(mellomstegretning, HIGH);
+  
   lcdInit();
   //initialize the variables we're linked to
   Setpoint = 100;
