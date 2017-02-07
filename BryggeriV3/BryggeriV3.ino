@@ -1454,6 +1454,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   digitalWrite(pumpePin, HIGH);
   digitalWrite(lokkPin, HIGH);
   pinMode(varmePin, OUTPUT);  // Varmelement
+  digitalWrite(varmePin, HIGH);
   resetindicator = 0;   // Debug indicator
 
 
@@ -1481,7 +1482,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   digitalWrite(s7, HIGH);
   digitalWrite(s8, HIGH);
   digitalWrite(s9, HIGH);
-
+  
   Start = false;
   pinMode(mellomsteg_knapp, INPUT_PULLUP);
   pinMode(lokkButtonpin, INPUT_PULLUP);
