@@ -337,7 +337,7 @@ void writeSkjermbuffer() {
     case 0: {
         printString("Start brygging", 0);
         printString("Vaskeprogram", 1);
-        printString("Manuellkjøring", 2);
+        printString("Manuell drift", 2);
         printString("Kalibrering", 3);
         printArrow();
       }
@@ -407,7 +407,7 @@ void writeSkjermbuffer() {
         else if (Steg == 6) {
           stringSteg = "Skylling";
         }
-        else if (Steg == (7||8||9||10)) {
+        else if (Steg == (7 || 8 || 9 || 10)) {
           stringSteg = "Avrenning";
         }
         else if (Steg == 11) {
@@ -484,9 +484,9 @@ void writeSkjermbuffer() {
         printString(String("Mesketank = " + mesketankTomstring), 1);
         printString(String("Mellomsteg = " + mellomstegTomstring), 2);
       }
-      break;  
+      break;
     case 40: {
-        
+
         String analog0 = String(analogRead(0));
         printString(String("Analog 0 = " + analog0), 1);
       }
@@ -754,12 +754,14 @@ int Setpunkt(int Steg, int MeskSet, int striketemp) {
     Setpunkt = k;
   }
 
-  else if (mankok) {
-    Setpunkt = man_koktemp;
-  }
+  else if (Steg == 0) {
+    if (mankok) {
+      Setpunkt = man_koktemp;
+    }
 
-  else if (manmesk) {
-    Setpunkt = man_mesktemp + 2;
+    else if (manmesk) {
+      Setpunkt = man_mesktemp + 2;
+    }
   }
   else {
     Setpunkt = 0;
@@ -930,37 +932,37 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (avrenningFerdig == true) {
       Steg = 8;
       Serial.println("Steg 7");
-  
+
     }
   }
-//8. Renne resten ned i mellomsteg
-  else if ((Steg == 8) && (Start == true)){
+  //8. Renne resten ned i mellomsteg
+  else if ((Steg == 8) && (Start == true)) {
     getSensordata();
     Pumpe = false;
-    
-    if(mesketankTom == true){
+
+    if (mesketankTom == true) {
       Steg = 9;
       init_mellomstegsventil();
       //Oppsett timer lufting
       timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
       timer.start();
     }
-    
+
   }
-//9. Lufte mellomsteg
-  else if ((Steg == 9) && (Start == true)){
+  //9. Lufte mellomsteg
+  else if ((Steg == 9) && (Start == true)) {
     mellomstegsventil(5000);
-    if(luftemellomsteg == true){
+    if (luftemellomsteg == true) {
       Steg = 10;
     }
-    
+
   }
-//10. pumpe opp fra mellomsteg
-  else if ((Steg == 10) && (Start == true)){
+  //10. pumpe opp fra mellomsteg
+  else if ((Steg == 10) && (Start == true)) {
     getSensordata();
     Pumpe = true;
 
-    if(mellomstegTom = true){
+    if (mellomstegTom = true) {
       Steg = 11;
       int t4 = 0, i4 = 0;
       if (koketid >= 60) {
@@ -974,7 +976,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       timer.setCounter(t4, i4, 0, timer.COUNT_DOWN, timerComplete);
       //Oppsett av timer for koking
     }
-    
+
   }
   else if ((Steg == 11) && (Start == true)) {
     // Koking
@@ -1042,7 +1044,7 @@ void timerComplete() {
   if (Steg == 7) {
     avrenningFerdig = true;
   }
-  if (Steg == 9){
+  if (Steg == 9) {
     luftemellomsteg = true;
   }
   if (Steg == 12) {
@@ -1076,10 +1078,10 @@ void solenoid() {
     digitalWrite(s9, HIGH);
     digitalWrite(mellomstegpower, LOW);
 
-    if(digitalRead(mellomsteg_knapp) == false){
+    if (digitalRead(mellomsteg_knapp) == false) {
       digitalWrite(mellomstegretning, LOW);
     }
-    else{
+    else {
       digitalWrite(mellomstegretning, HIGH);
     }
 
@@ -1173,8 +1175,8 @@ void solenoid() {
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
     }
- 
-    else if (Steg == 8){
+
+    else if (Steg == 8) {
       digitalWrite(s0, LOW);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1184,9 +1186,9 @@ void solenoid() {
       digitalWrite(s6, HIGH);
       digitalWrite(s7, HIGH);
       digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);      
+      digitalWrite(s9, HIGH);
     }
-    else if (Steg == 9){
+    else if (Steg == 9) {
       digitalWrite(s0, LOW);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1196,9 +1198,9 @@ void solenoid() {
       digitalWrite(s6, HIGH);
       digitalWrite(s7, LOW);
       digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);      
+      digitalWrite(s9, HIGH);
     }
-    else if (Steg == 10){
+    else if (Steg == 10) {
       digitalWrite(s0, HIGH);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1208,7 +1210,7 @@ void solenoid() {
       digitalWrite(s6, HIGH);
       digitalWrite(s7, LOW);
       digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);      
+      digitalWrite(s9, HIGH);
     }
     else if (Steg == 11) { //OPPKOK
       digitalWrite(s0, HIGH);
@@ -1378,7 +1380,7 @@ void mellomstegsventil(int aapningstid) {
   }
 }
 
-void lukkemellomstegsventil(){
+void lukkemellomstegsventil() {
   digitalWrite(mellomstegpower, LOW);
   digitalWrite(mellomstegretning, HIGH);
 }
@@ -1438,7 +1440,7 @@ void lokk() {
 }
 
 
-void getSensordata(){
+void getSensordata() {
   Wire.requestFrom(9, 3);
   int analogread = Wire.read();
   mellomstegTom = Wire.read();
@@ -1482,7 +1484,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   digitalWrite(s7, HIGH);
   digitalWrite(s8, HIGH);
   digitalWrite(s9, HIGH);
-  
+
   Start = false;
   pinMode(mellomsteg_knapp, INPUT_PULLUP);
   pinMode(lokkButtonpin, INPUT_PULLUP);
@@ -1495,7 +1497,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   digitalWrite(regventretning, HIGH);
   digitalWrite(mellomstegpower, HIGH);
   digitalWrite(mellomstegretning, HIGH);
-  
+
   lcdInit();
   //initialize the variables we're linked to
   Setpoint = 100;
@@ -1548,7 +1550,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   timer.run();
   //Serial.println(resetindicator);
   //resetindicator++;
-  
+
   //lcdLoop();
   Input = koktemp();
   sekvens();
@@ -1560,11 +1562,11 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   Setpoint = Setpunkt(Steg, MeskSet, striketemp);
   varmeReg();
 
-    unsigned long now = millis();
-    if(now - windowStartTime>100)
-    { //time to shift the Relay Window
-     lcdLoop(); 
-     windowStartTime += 100;
-    }
+  unsigned long now = millis();
+  if (now - windowStartTime > 100)
+  { //time to shift the Relay Window
+    lcdLoop();
+    windowStartTime += 100;
+  }
 
 }
