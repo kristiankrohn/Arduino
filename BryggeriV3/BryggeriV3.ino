@@ -85,7 +85,7 @@ int pitchtemp = 556; // HUSK Å KALIBRERE DENNE
 int kokepunkt = 667; // HUSK Å KALIBRERE DENNE
 int mesketid = 90;
 int koketid = 90;
-int avrenningstid = 5; //Minutter
+int avrenningstid = 15; //Minutter
 const float pumpekonstant = 14.25; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
 int MeskSet = 631;
 int regventpower = 33;
@@ -750,7 +750,7 @@ int Setpunkt(int Steg, int MeskSet, int striketemp) {
     Setpunkt = meskset;
   }
 
-  else if ((Steg == 8) || (Steg == 9)) {
+  else if ((Steg == 11) || (Steg == 12)) {
     Setpunkt = k;
   }
 
@@ -901,14 +901,14 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   else if ((Steg == 6) && (Start == true)) {
     // Skylling
     opneRegvent();
-    mellomstegsventil(1500);
+    mellomstegsventil(1200);
     if (skyllFerdig) {
       Steg = 7;
       Serial.println("Steg 6"); //Pulse pumpe
 
       //Oppsett av timer for avrenning.
       int t3 = 0, i3 = 0;
-
+      
       if (avrenningstid >= 60) {
         t3 = avrenningstid / 60;
         i3 = avrenningstid % 60;
@@ -931,26 +931,30 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     pulsepumpe();
     getSensordata();
     lukkemellomstegsventil();
-    if (mesketankTom == true) {
-      Steg = 9;
+    if ((mesketankTom == true)||(avrenningFerdig == true)) {
+      if (mesketankTom == true){
+        Steg = 9;
+      }
+      else{
+        Steg = 8;
+      }
       Serial.println("Steg 7");
       init_mellomstegsventil();
       //Oppsett timer lufting
       timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
       timer.start();
+      Pumpe = false;
     }
   }
   //8. Renne resten ned i mellomsteg
   else if ((Steg == 8) && (Start == true)) {
     getSensordata();
-    Pumpe = false;
+
 
     if (mesketankTom == true) {
       Steg = 9;
       init_mellomstegsventil();
-      //Oppsett timer lufting
-      timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
-      timer.start();
+      
     }
 
   }
@@ -959,13 +963,14 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     mellomstegsventil(5000);
     if (luftemellomsteg == true) {
       Steg = 10;
+      Pumpe = true;
     }
 
   }
   //10. pumpe opp fra mellomsteg
   else if ((Steg == 10) && (Start == true)) {
     getSensordata();
-    Pumpe = true;
+    
 
     if (mellomstegTom == true) {
       Steg = 11;
@@ -977,7 +982,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       else {
         i4 = koketid;
       }
-
+      Pumpe = true;
       timer.setCounter(t4, i4, 0, timer.COUNT_DOWN, timerComplete);
       //Oppsett av timer for koking
     }
@@ -990,6 +995,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       timer.start();
       Steg = 12;
       Serial.println("Steg 8");
+      Pumpe = true;
     }
 
   }
@@ -1191,7 +1197,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
 
-    else if (Steg == 8) { // ikke i bruk atm
+    else if (Steg == 8) { // Renne ned i mellomsteg
       digitalWrite(s0, LOW);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1204,7 +1210,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
     else if (Steg == 9) { // Lufte mellomsteg
-      digitalWrite(s0, LOW);
+      digitalWrite(s0, HIGH);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
       digitalWrite(s3, LOW);
@@ -1578,7 +1584,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   //Serial.println(resetindicator);
   //resetindicator++;
 
-  //lcdLoop();
+  lcdLoop();
   Input = koktemp();
   sekvens();
   solenoid();
@@ -1588,12 +1594,12 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   //Serial.println(tick);
   Setpoint = Setpunkt(Steg, MeskSet, striketemp);
   varmeReg();
-
+/*
   unsigned long now = millis();
   if (now - windowStartTime > 100)
   { //time to shift the Relay Window
     lcdLoop();
     windowStartTime += 100;
   }
-
+*/
 }
