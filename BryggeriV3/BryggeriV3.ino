@@ -215,7 +215,7 @@ int analogToCelcius(int analog) {
   y1 = 213.5846863 * x;
   y0 = 19535.88672;
   y = y5 - y4 + y3 - y2 + y1 - y0;
-
+  y = constrain(y, 0, 99);
   return (int) y;
 }
 
@@ -234,7 +234,7 @@ int celciusToAnalog(int celcius) {
   y1 = 108.7976574 * x;
   y0 = 138.9718901;
   y = y7 - y6 + y5 - y4 + y3 - y2 + y1 - y0;
-
+  
   return (int) y;
 }
 
@@ -407,7 +407,7 @@ void writeSkjermbuffer() {
         else if (Steg == 6) {
           stringSteg = "Skylling";
         }
-        else if (Steg == (7 || 8 || 9 || 10)) {
+        else if ((Steg <= 10) && (Steg >= 7)) {
           stringSteg = "Avrenning";
         }
         else if (Steg == 11) {
@@ -421,9 +421,9 @@ void writeSkjermbuffer() {
         }
         Start = true;
         printString(stringSteg, 0);
-        String mesketemp = String(analogToCelcius(analogRead(0)));
+        String mesketemp = String(analogToCelcius(analogRead(A0)));
         printString(String("Mesketemperatur: " + mesketemp), 1);
-        String koketemp = String(analogToCelcius((analogRead(1) + analogRead(2)) / 2));
+        String koketemp = String(analogToCelcius(koktemp()));
         printString(String("Koketemperatur: " + koketemp), 2);
         String TimerTimer = String(timer.getCurrentTime());
         printString(String("Timer: " + TimerTimer), 3);
@@ -451,7 +451,7 @@ void writeSkjermbuffer() {
     case 32: {
         String man_kokeTempstring = String(man_koktempC);
         printString(String("KokSet = " + man_kokeTempstring), 1);
-        String koketemp = String(analogToCelcius((analogRead(1) + analogRead(2)) / 2));
+        String koketemp = String(analogToCelcius(koktemp()));
         printString(String("Koketemperatur: " + koketemp), 2);
       }
       break;
@@ -818,7 +818,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
         i0 = striketid;
         t0 = 0;
       }
-
+      init_reguleringsventil();
       timer.setCounter(0, t0, i0, timer.COUNT_DOWN, timerComplete);
       timer.start();
       /*Serial.print(t0);
@@ -901,7 +901,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   else if ((Steg == 6) && (Start == true)) {
     // Skylling
     opneRegvent();
-    mellomstegsventil(600);
+    mellomstegsventil(1500);
     if (skyllFerdig) {
       Steg = 7;
       Serial.println("Steg 6"); //Pulse pumpe
@@ -929,10 +929,15 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     // tapping fra mesketank
     lukkeRegvent();
     pulsepumpe();
-    if (avrenningFerdig == true) {
-      Steg = 8;
+    getSensordata();
+    lukkemellomstegsventil();
+    if (mesketankTom == true) {
+      Steg = 9;
       Serial.println("Steg 7");
-
+      init_mellomstegsventil();
+      //Oppsett timer lufting
+      timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
+      timer.start();
     }
   }
   //8. Renne resten ned i mellomsteg
@@ -962,7 +967,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     getSensordata();
     Pumpe = true;
 
-    if (mellomstegTom = true) {
+    if (mellomstegTom == true) {
       Steg = 11;
       int t4 = 0, i4 = 0;
       if (koketid >= 60) {
@@ -1098,6 +1103,8 @@ void solenoid() {
       digitalWrite(s7, LOW);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 2) { // VARME VANN TIL STRIKETEMP
@@ -1111,6 +1118,8 @@ void solenoid() {
       digitalWrite(s7, LOW);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 3) { // STRIKE
@@ -1124,6 +1133,8 @@ void solenoid() {
       digitalWrite(s7, HIGH);
       digitalWrite(s8, LOW);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
     else if (Steg == 4) { // LUFTING
       digitalWrite(s0, LOW);
@@ -1136,6 +1147,8 @@ void solenoid() {
       digitalWrite(s7, HIGH);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
     else if (Steg == 5) { // MESK
       digitalWrite(s0, LOW);
@@ -1148,9 +1161,11 @@ void solenoid() {
       digitalWrite(s7, HIGH);
       digitalWrite(s8, LOW);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
 
-    else if (Steg == 6) { //SKYLLING
+    else if (Steg == 6) { //SKYLLING - renning ned i mellomsteg
       digitalWrite(s0, LOW);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1163,7 +1178,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
 
-    else if (Steg == 7) { //AVRENNING
+    else if (Steg == 7) { //AVRENNING - pulsepumpe 
       digitalWrite(s0, LOW);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1176,7 +1191,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
 
-    else if (Steg == 8) {
+    else if (Steg == 8) { // ikke i bruk atm
       digitalWrite(s0, LOW);
       digitalWrite(s1, HIGH);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1188,7 +1203,7 @@ void solenoid() {
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
     }
-    else if (Steg == 9) {
+    else if (Steg == 9) { // Lufte mellomsteg
       digitalWrite(s0, LOW);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1199,18 +1214,22 @@ void solenoid() {
       digitalWrite(s7, LOW);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, LOW);
     }
-    else if (Steg == 10) {
+    else if (Steg == 10) {  // Pumpe opp fra mellomsteg til koketank
       digitalWrite(s0, HIGH);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
-      digitalWrite(s3, LOW);
+      digitalWrite(s3, HIGH);
       digitalWrite(s4, LOW);
       digitalWrite(s5, HIGH);
       digitalWrite(s6, HIGH);
       digitalWrite(s7, LOW);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, LOW);
     }
     else if (Steg == 11) { //OPPKOK
       digitalWrite(s0, HIGH);
@@ -1223,6 +1242,8 @@ void solenoid() {
       digitalWrite(s7, LOW);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 12) { //KOKING
@@ -1236,6 +1257,8 @@ void solenoid() {
       digitalWrite(s7, LOW);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 13) { //NEDKJØLING
@@ -1249,6 +1272,8 @@ void solenoid() {
       digitalWrite(s7, HIGH);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, LOW);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
 
     else {
@@ -1262,6 +1287,8 @@ void solenoid() {
       digitalWrite(s7, HIGH);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
+      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegretning, HIGH);
     }
   }
 }
@@ -1354,7 +1381,7 @@ void pulsepumpe() {
   if ((Now - pumpeStartTime) > 10000) { //time to shift the Relay Window
     pumpeStartTime += 10000;
   }
-  if (5000 > Now - pumpeStartTime) {
+  if (6000 > Now - pumpeStartTime) {
     Pumpe = true;
   }
 
@@ -1369,7 +1396,7 @@ void init_mellomstegsventil() {
 
 void mellomstegsventil(int aapningstid) {
   unsigned long Now = millis();
-  if ((Now - pulseventilStartTime) > aapningstid) { //time to shift the Relay Window
+  if ((Now - pulseventilStartTime) < aapningstid) { //time to shift the Relay Window
     digitalWrite(mellomstegpower, LOW);
     digitalWrite(mellomstegretning, LOW);
   }
