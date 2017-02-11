@@ -5,12 +5,12 @@
 #include <Bridge.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-//#include <PID_v1.h>
-
-//#define RelayPin 36 //Varmeelement
 
 
-/* Sekvenskode med følgende steg                        Betingelser
+
+/* NB UTDATERT!
+ *  
+ *  Sekvenskode med følgende steg                        Betingelser 
     0. Standby                                          Start=0
     1. Fylle vann for mesking og skylling i koketank    koktankvolum=meskvolum+skyllvolum
     2. Varme opp vannet til striketemperatur            kokset=striketemp
@@ -40,27 +40,27 @@ IPAddress subnet(255, 255, 255, 0);
   IPAddress dns_server(192, 168, 0, 1);
   IPAddress subnet(255, 255, 255, 0);
 */
+
 const int listen_port = 80;
 
 
 opcOperation digital_status_input[14], analog_status_input[6];
 
-//Define Variables we'll be connecting to
+
 double Setpoint, Input, Output;
 
-//Specify the links and initial tuning parameters
-//PID myPID(&Input, &Output, &Setpoint, 1,10000,0, DIRECT);
-//int WindowSize = 10000; //Setter frekvensen for PWM output fra PID 10000ms = 10s
+unsigned long Now;
 unsigned long windowStartTime;
 unsigned long ventilStartTime;
 unsigned long pumpeStartTime;
 unsigned long startTid;
 unsigned long varmeStartTime;
 unsigned long pulseventilStartTime;
+unsigned long screenStartTime;
 Countimer timer;
 const byte flowMeter = 2; // Må være enten pin 2, 3, 18, 19, 20, 21
-unsigned long tick = 0; // Flowmeter tics
-unsigned long man_tick = 0;
+volatile unsigned long tick = 0; // Flowmeter tics
+volatile unsigned long man_tick = 0;
 bool strikeFerdig = false;
 bool meskFerdig = false;
 bool kokFerdig = false;
@@ -96,6 +96,12 @@ int man_koktempC = 67;
 int man_mesktemp;
 int man_mesktempC = 67;
 int screen = 0;
+
+int analog_mesktemp;
+int analog_koktopptemp;
+int analog_kokbunntemp;
+
+
 
 int mellomsteg_knapp = 32;
 int mellomstegpower = 30;
@@ -421,7 +427,7 @@ void writeSkjermbuffer() {
         }
         Start = true;
         printString(stringSteg, 0);
-        String mesketemp = String(analogToCelcius(analogRead(A0)));
+        String mesketemp = String(analogToCelcius(analog_mesktemp));
         printString(String("Mesketemperatur: " + mesketemp), 1);
         String koketemp = String(analogToCelcius(koktemp()));
         printString(String("Koketemperatur: " + koketemp), 2);
@@ -465,7 +471,7 @@ void writeSkjermbuffer() {
     case 34: {
         String man_meskset = String(man_mesktempC);
         printString(String("MeskSet = " + man_meskset), 1);
-        String mesketemp = String(analogToCelcius(analogRead(0)));
+        String mesketemp = String(analogToCelcius(analog_mesktemp));
         printString(String("Mesketemperatur: " + mesketemp), 2);
         reguleringsventil(man_mesktemp);
       }
@@ -487,7 +493,7 @@ void writeSkjermbuffer() {
       break;
     case 40: {
 
-        String analog0 = String(analogRead(0));
+        String analog0 = String(analog_mesktemp);
         printString(String("Analog 0 = " + analog0), 1);
       }
       break;
@@ -538,7 +544,6 @@ int changeVariable(int i) {
 }
 
 void skjermbufferInit() {
-
   skjermbuffer = (char**)malloc(sizeof(char*) * 4);
   if (skjermbuffer == NULL) {
     Serial.println("buffer** not allocated\n");
@@ -567,6 +572,13 @@ void skjermbufferClear() {
   }
 }
 
+void lcdRestore(){
+  if(!digitalRead(up)&&!digitalRead(down)){
+    lcd.init();
+    lcd.backlight();
+  }
+}
+
 void lcdInit() {
   pinMode(back, INPUT_PULLUP);
   pinMode(down, INPUT_PULLUP);
@@ -582,12 +594,20 @@ void lcdInit() {
   printString("Krohn & Hoel Eng.", 2);
   printBuffer(skjermbuffer);
   delay(3000);
+  screenStartTime = millis();
 }
 
 void lcdLoop() {
   menuNavigation();
   writeSkjermbuffer();
-  printBuffer(skjermbuffer);
+  lcdRestore();
+  if (Now - screenStartTime > 500)
+  { 
+
+    printBuffer(skjermbuffer);
+    windowStartTime += 500;
+
+  }
 }
 
 
@@ -632,21 +652,16 @@ int Step(const char *itemID, const opcOperation opcOP, const int value) {
     return Steg;
 }
 
-int analogPin0 = 0;
 int write_mesktemp(const char *itemID, const opcOperation opcOP, const int value) {
-  return analogRead(analogPin0);
+  return analog_mesktemp;
 }
 
-
-int analogPin1 = 1;
 int write_koktopptemp(const char *itemID, const opcOperation opcOP, const int value) {
-  return analogRead(analogPin1);
+  return analog_koktopptemp;
 }
 
-
-int analogPin2 = 2;
 int write_kokbunntemp(const char *itemID, const opcOperation opcOP, const int value) {
-  return analogRead(analogPin2);
+  return analog_kokbunntemp;
 }
 
 int meskevolumRW(const char *itemID, const opcOperation opcOP, const int value) {
@@ -725,8 +740,8 @@ int write_input(const char *itemID, const opcOperation opcOP, const int value) {
 
 int koktemp() {
   int temp1, temp2, tempsnitt, temp;
-  temp1 = analogRead(A1);
-  temp2 = analogRead(A2);
+  temp1 = analog_koktopptemp;
+  temp2 = analog_kokbunntemp;
 
   tempsnitt = (temp1 + temp2) / 2;
 
@@ -902,7 +917,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     // Skylling
     opneRegvent();
     mellomstegsventil(1200);
-    if (skyllFerdig) {
+    if (menuNav == 6){      // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
+    //if (skyllFerdig) {
       Steg = 7;
       Serial.println("Steg 6"); //Pulse pumpe
 
@@ -969,8 +985,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   }
   //10. pumpe opp fra mellomsteg
   else if ((Steg == 10) && (Start == true)) {
+  
     getSensordata();
-    
 
     if (mellomstegTom == true) {
       Steg = 11;
@@ -1035,10 +1051,16 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 }
 
 
+void print_time2() //Fjern etter testing
+{
+  //Serial.print("Tiden er: ");
+  //Serial.println(timer.getCurrentTime());
+}
+
 void timerComplete() {
   if (Steg == 0) { //Fjern etter testing
     //Start=true;
-    Serial.println("START!");
+    //Serial.println("START!");
   }
   if (Steg == 3) {
     strikeFerdig = true;
@@ -1060,17 +1082,8 @@ void timerComplete() {
   }
   if (Steg == 12) {
     kokFerdig = true;
-    Serial.println("Kok ferdig!");
+    //Serial.println("Kok ferdig!");
   }
-}
-
-
-
-
-void print_time2() //Fjern etter testing
-{
-  Serial.print("Tiden er: ");
-  Serial.println(timer.getCurrentTime());
 }
 
 void solenoid() {
@@ -1293,7 +1306,7 @@ void solenoid() {
       digitalWrite(s7, HIGH);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
-      digitalWrite(mellomstegpower, LOW);
+      digitalWrite(mellomstegpower, HIGH);
       digitalWrite(mellomstegretning, HIGH);
     }
   }
@@ -1304,7 +1317,7 @@ void init_reguleringsventil() {
 }
 
 void opneRegvent() {
-  unsigned long Now = millis();
+
   bool c;
   c = digitalRead(5);
   if (!c) {
@@ -1320,7 +1333,7 @@ void opneRegvent() {
 }
 
 void lukkeRegvent() {
-  unsigned long Now = millis();
+
   if (5000 > (Now - ventilStartTime)) {
     digitalWrite(regventpower, LOW);
     digitalWrite(regventretning, HIGH);
@@ -1335,8 +1348,8 @@ void reguleringsventil(int mesk_set) {  //Vurder å skrive om til PWM modulert P
     digitalWrite(regventretning, HIGH);
   }
   else {
-    int k = analogRead(analogPin0);
-    unsigned long Now = millis();
+    int k = analog_mesktemp;
+
     if ((Now - ventilStartTime) > 5000) { //time to shift the Relay Window
       ventilStartTime += 5000;
 
@@ -1366,7 +1379,7 @@ void init_varmereg() {
 }
 
 void varmeReg() {
-  unsigned long Now = millis();
+
   if ((Now - varmeStartTime) > 10000) { //time to shift the Relay Window
     if (Setpoint >= Input) {
       digitalWrite(varmePin, LOW); // Aktiv lav
@@ -1383,7 +1396,7 @@ void init_pulsepumpe() {
 }
 
 void pulsepumpe() {
-  unsigned long Now = millis();
+
   if ((Now - pumpeStartTime) > 10000) { //time to shift the Relay Window
     pumpeStartTime += 10000;
   }
@@ -1401,7 +1414,7 @@ void init_mellomstegsventil() {
 }
 
 void mellomstegsventil(int aapningstid) {
-  unsigned long Now = millis();
+
   if ((Now - pulseventilStartTime) < aapningstid) { //time to shift the Relay Window
     digitalWrite(mellomstegpower, LOW);
     digitalWrite(mellomstegretning, LOW);
@@ -1421,20 +1434,17 @@ void lukkemellomstegsventil() {
 void pumpe() {
   button = digitalRead(buttonpin);
 
-  if (button && !oldbutton) { // same as if(button == high && oldbutton == low) we have a new button press
-    if (Pumpe == false) { // if the state is off, turn it on
-      //do stuff
+  if (button && !oldbutton) { 
+    if (Pumpe == false) { 
       Pumpe = true;
     }
-    else { // if the state is on, turn it off
-      //do stuff
+    else { 
       Pumpe = false;
     }
     oldbutton = 1;
   }
-  else if (!button && oldbutton) // same as if(button == low && oldbutton == high)
+  else if (!button && oldbutton) 
   {
-    // the button was released
     oldbutton = 0;
   }
 
@@ -1474,15 +1484,25 @@ void lokk() {
 
 
 void getSensordata() {
+
   Wire.requestFrom(9, 3);
   int analogread = Wire.read();
   mellomstegTom = Wire.read();
   mesketankTom = Wire.read();
+
 }
+
+void getAnalogdata(){
+  analog_mesktemp = analogRead(0);
+  analog_koktopptemp = analogRead(1);
+  analog_kokbunntemp = analogRead(2);
+}
+
 
 void setup() {//SETUP           SETUP           SETUP           SETUP           SETUP            SETUP            SETUP
   Ethernet.begin(mac, ip, dns, gateway, subnet);
   Serial.begin(9600);
+
   Wire.begin(8);
   pinMode(pumpePin, OUTPUT);
   pinMode(lokkPin, OUTPUT);
@@ -1532,17 +1552,10 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   digitalWrite(mellomstegretning, HIGH);
 
   lcdInit();
-  //initialize the variables we're linked to
-  Setpoint = 100;
+
 
   varmeStartTime = 0;
   windowStartTime = millis();
-  //tell the PID to range between 0 and the full window size
-  // myPID.SetOutputLimits(0, WindowSize);
-
-  //turn the PID on
-  //myPID.SetMode(AUTOMATIC);
-
 
   byte k;
   for (k = 0; k < 14; k++) digital_status_input[k] = opc_opread;
@@ -1569,8 +1582,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
 
   timer.setCounter(0, 0, 1, timer.COUNT_DOWN, timerComplete);
   timer.start();
-  timer.setInterval(print_time2, 1000);
-
+  timer.setInterval(print_time2, 1000); // kan ikke fjernes
 }
 
 
@@ -1580,26 +1592,22 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
 
 void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN
   aOPC.processOPCCommands();
-  timer.run();
-  //Serial.println(resetindicator);
-  //resetindicator++;
-
+  noInterrupts();
+    timer.run();
+    Now = millis();
+  interrupts();
+  getAnalogdata();
   lcdLoop();
   Input = koktemp();
   sekvens();
-  solenoid();
-  pumpe();
-  lokk();
-  aOPC.processOPCCommands();
-  //Serial.println(tick);
+
+  if (Now - windowStartTime > 500){
+    solenoid();
+    pumpe();
+    lokk();
+    windowStartTime += 500;
+  }
   Setpoint = Setpunkt(Steg, MeskSet, striketemp);
   varmeReg();
-/*
-  unsigned long now = millis();
-  if (now - windowStartTime > 100)
-  { //time to shift the Relay Window
-    lcdLoop();
-    windowStartTime += 100;
-  }
-*/
+
 }
