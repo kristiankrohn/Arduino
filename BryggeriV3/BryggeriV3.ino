@@ -1512,6 +1512,8 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   digitalWrite(varmePin, HIGH);
   resetindicator = 0;   // Debug indicator
 
+  pinMode(4, OUTPUT); // Disable SDcard reader on ethernet shield
+  digitalWrite(4, HIGH);
 
   pinMode(mellomstegpower, OUTPUT);
   pinMode(mellomstegretning, OUTPUT);
@@ -1600,7 +1602,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   lcdLoop();
   Input = koktemp();
   sekvens();
-
+  
   if (Now - windowStartTime > 500){
     solenoid();
     pumpe();
