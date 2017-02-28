@@ -208,7 +208,7 @@ void menuNavigation() {
 
 int analogToCelcius(int analog) {
   //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
-  float y5, y4, y3, y2, y1, y0, y;
+  /*float y5, y4, y3, y2, y1, y0, y;
   float x;
 
   //y = (6.821153642 * pow(10, -10) * pow(x, 5)) - (1.769379423 * pow(10, -6) * pow(x, 4)) + (1.800293103 * pow(10, -3) * pow(x, 3)) - (8.921113014 * pow(10, -1) * pow(x, 2))+ (213.5846863 * x) - 19535.88672;
@@ -222,12 +222,14 @@ int analogToCelcius(int analog) {
   y0 = 19535.88672;
   y = y5 - y4 + y3 - y2 + y1 - y0;
   y = constrain(y, 0, 99);
-  return (int) y;
+  return (int) y;*/
+
+  return (int) constrain((analog/10.23), 0, 100);
 }
 
 int celciusToAnalog(int celcius) {
   //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
-  float y7, y6, y5, y4, y3, y2, y1, y0, y;
+  /*float y7, y6, y5, y4, y3, y2, y1, y0, y;
   float x;
   x = (float)celcius;
 
@@ -241,7 +243,8 @@ int celciusToAnalog(int celcius) {
   y0 = 138.9718901;
   y = y7 - y6 + y5 - y4 + y3 - y2 + y1 - y0;
   
-  return (int) y;
+  return (int) y;*/
+  return (int) constrain((celcius * 10.23), 0, 1023);
 }
 
 int MeskSetC;
@@ -756,7 +759,7 @@ int Setpunkt(int Steg, int MeskSet, int striketemp) {
   int k = 1024;
 
   meskset = MeskSet + 2;
-
+  striketemp = MeskSet + 5; 
   if (Steg == 2) {
     Setpunkt = striketemp;
   }
@@ -805,7 +808,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (koketankvolum >= (meskevolum + skyllevolum)) { //Når koketankvolum = meskevolum + skyllevolum
 
       Serial.println("Steg 2");
-      //Pumpe = true;
+
       Steg = 2;
       Pumpe = true;
     }
@@ -814,7 +817,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
   else if ((Steg == 2) && (Start == true)) {
     //Varmer opp vannet i koketanken til striketemp
-    striketemp = MeskSet + 5;   //                     <---------   DENNE MÅ KALIBRERES!!!
+
     if (Input >= striketemp) { //koketanktemp == Input
       Steg = 3;
 
@@ -1451,7 +1454,7 @@ void pumpe() {
   if (Pumpe) {
     digitalWrite(pumpePin, LOW);
   }
-  if (Pumpe == false) {
+  else if (Pumpe == false) {
     digitalWrite(pumpePin, HIGH);
   }
 }
@@ -1485,15 +1488,20 @@ void lokk() {
 
 void getSensordata() {
 
-  Wire.requestFrom(9, 3);
-  int analogread = Wire.read();
+  Wire.requestFrom(9, 4);
+  analog_mesktemp = Wire.read();
+  analog_mesktemp |= (Wire.read() << 8);
   mellomstegTom = Wire.read();
   mesketankTom = Wire.read();
 
 }
 
 void getAnalogdata(){
-  analog_mesktemp = analogRead(0);
+  //analog_mesktemp = analogRead(0); moved this sensor to sensornode
+
+  Wire.requestFrom(9, 2);
+  analog_mesktemp = Wire.read();
+  analog_mesktemp |= (Wire.read() << 8);
   analog_koktopptemp = analogRead(1);
   analog_kokbunntemp = analogRead(2);
 }

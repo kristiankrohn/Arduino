@@ -8,6 +8,7 @@ bool mesketankTom = false;
 
 void sendI2c(){
   Wire.write(mesketemp);
+  Wire.write(mesketemp >> 8);
   Wire.write(mellomstegTom);       
   Wire.write(mesketankTom);              
 }
@@ -24,9 +25,10 @@ void setup() {
 
 void loop() {
   
-  mesketemp = analogRead(0);
+  mesketemp = analogRead(1);
   mellomstegTom = digitalRead(mellomsteg);
   mesketankTom = digitalRead(mesketank);
+  Serial.println(mesketemp);
   
   if(mellomstegTom){
     digitalWrite(13, HIGH);
