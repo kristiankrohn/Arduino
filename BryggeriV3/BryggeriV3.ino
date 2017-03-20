@@ -5,12 +5,12 @@
 #include <Bridge.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-
+#include <mcp_can.h>
 
 
 /* NB UTDATERT!
- *  
- *  Sekvenskode med følgende steg                        Betingelser 
+
+    Sekvenskode med følgende steg                        Betingelser
     0. Standby                                          Start=0
     1. Fylle vann for mesking og skylling i koketank    koktankvolum=meskvolum+skyllvolum
     2. Varme opp vannet til striketemperatur            kokset=striketemp
@@ -24,6 +24,10 @@
 
 
 */
+
+const int SPI_CS_PIN = 49;
+
+MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 OPCEthernet aOPC;
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -48,7 +52,7 @@ opcOperation digital_status_input[14], analog_status_input[6];
 
 
 double Setpoint, Input, Output;
-
+unsigned char CANbuf[8];
 unsigned long Now;
 unsigned long windowStartTime;
 unsigned long ventilStartTime;
@@ -81,8 +85,8 @@ int koketankvolum;
 int mesketankvolum;
 int striketemp;
 int skylletemp;
-int pitchtemp = 556; // HUSK Å KALIBRERE DENNE
-int kokepunkt = 667; // HUSK Å KALIBRERE DENNE
+int pitchtemp = 226; // HUSK Å KALIBRERE DENNE
+int kokepunkt = 990; // HUSK Å KALIBRERE DENNE
 int mesketid = 90;
 int koketid = 90;
 int avrenningstid = 15; //Minutter
@@ -100,7 +104,6 @@ int screen = 0;
 int analog_mesktemp;
 int analog_koktopptemp;
 int analog_kokbunntemp;
-
 
 
 int mellomsteg_knapp = 32;
@@ -208,43 +211,34 @@ void menuNavigation() {
 
 int analogToCelcius(int analog) {
   //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
-  /*float y5, y4, y3, y2, y1, y0, y;
-  float x;
+  float y2, y1, y0, y;
+    float x;
+    x = (float)analog;
+    y2 = 7.303936479 * pow(10, -6) * pow(x, 2);
+    y1 = 8.864423369 * x;
+    y0 = 5.550170204;
+    y = y2 + y1 - y0 ;
 
-  //y = (6.821153642 * pow(10, -10) * pow(x, 5)) - (1.769379423 * pow(10, -6) * pow(x, 4)) + (1.800293103 * pow(10, -3) * pow(x, 3)) - (8.921113014 * pow(10, -1) * pow(x, 2))+ (213.5846863 * x) - 19535.88672;
-  x = (float)analog;
-
-  y5 = 6.821153642 * pow(10, -10) * pow(x, 5);
-  y4 = 1.769379423 * pow(10, -6) * pow(x, 4);
-  y3 = 1.800293103 * pow(10, -3) * pow(x, 3);
-  y2 = 8.921113014 * pow(10, -1) * pow(x, 2);
-  y1 = 213.5846863 * x;
-  y0 = 19535.88672;
-  y = y5 - y4 + y3 - y2 + y1 - y0;
-  y = constrain(y, 0, 99);
-  return (int) y;*/
-
-  return (int) constrain((analog/10.23), 0, 100);
+  return (int) constrain(y, 0, 99);
 }
 
 int celciusToAnalog(int celcius) {
   //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
-  /*float y7, y6, y5, y4, y3, y2, y1, y0, y;
-  float x;
-  x = (float)celcius;
+  float y8, y7, y6, y5, y4, y3, y2, y1, y0, y;
+    float x;
+    x = (float)celcius;
+    y8 = 7.65775221  * pow(10, -11) * pow(x, 8); 
+    y7 = 3.125765713 * pow(10, -8) * pow(x, 7);
+    y6 = 5.364581341 * pow(10, -6) * pow(x, 6);
+    y5 = 5.028645646 * pow(10, -4) * pow(x, 5);
+    y4 = 2.795824874 * pow(10, -2) * pow(x, 4);
+    y3 = 9.350909963 * pow(10, -1) * pow(x, 3);
+    y2 = 18.1332556  * pow(x, 2);
+    y1 = 172.4566288 * x;
+    y0 = 733.2841988;
+    y = y8 - y7 + y6 - y5 + y4 - y3 + y2 - y1 + y0;
 
-  y7 = 7.989214793 * pow(10, -10) * pow(x, 7);
-  y6 = 3.212325030 * pow(10, -7) * pow(x, 6);
-  y5 = 5.336986237 * pow(10, -5) * pow(x, 5);
-  y4 = 4.733179194 * pow(10, -3) * pow(x, 4);
-  y3 = 2.409499472 * pow(10, -1) * pow(x, 3);
-  y2 = 7.006408924 * pow(x, 2);
-  y1 = 108.7976574 * x;
-  y0 = 138.9718901;
-  y = y7 - y6 + y5 - y4 + y3 - y2 + y1 - y0;
-  
-  return (int) y;*/
-  return (int) constrain((celcius * 10.23), 0, 1023);
+  return (int) constrain(y, 0, 1023);
 }
 
 int MeskSetC;
@@ -414,7 +408,7 @@ void writeSkjermbuffer() {
           stringSteg = "Mesking";
         }
         else if (Steg == 6) {
-          stringSteg = "Skylling";
+          stringSteg = "Skylling, entr fr nxt";
         }
         else if ((Steg <= 10) && (Steg >= 7)) {
           stringSteg = "Avrenning";
@@ -486,8 +480,8 @@ void writeSkjermbuffer() {
       }
       break;
     case 37: {
-        //I2C test
-        getSensordata();
+        //CANbus test
+        //getSensordata();
         String mesketankTomstring = String(mesketankTom);
         String mellomstegTomstring = String(mellomstegTom);
         printString(String("Mesketank = " + mesketankTomstring), 1);
@@ -575,8 +569,8 @@ void skjermbufferClear() {
   }
 }
 
-void lcdRestore(){
-  if(!digitalRead(up)&&!digitalRead(down)){
+void lcdRestore() {
+  if (!digitalRead(up) && !digitalRead(down)) {
     lcd.init();
     lcd.backlight();
   }
@@ -605,7 +599,7 @@ void lcdLoop() {
   writeSkjermbuffer();
   lcdRestore();
   if (Now - screenStartTime > 500)
-  { 
+  {
 
     printBuffer(skjermbuffer);
     windowStartTime += 500;
@@ -759,7 +753,7 @@ int Setpunkt(int Steg, int MeskSet, int striketemp) {
   int k = 1024;
 
   meskset = MeskSet + 2;
-  striketemp = MeskSet + 5; 
+  striketemp = MeskSet + 5;
   if (Steg == 2) {
     Setpunkt = striketemp;
   }
@@ -886,10 +880,10 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     //Mesking
     reguleringsventil(MeskSet);
     int m = (int)timer.getCurrentMinutes();
-    if (m < 14) { // Setter setpunkt til mashout
+    /*if (m < 14) { // Setter setpunkt til mashout
       Serial.println(m);
       //MeskSet = MeskSet; //Skylletemp
-    }
+      }*/
 
     if (meskFerdig) {
       Steg = 6;
@@ -920,14 +914,14 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     // Skylling
     opneRegvent();
     mellomstegsventil(1200);
-    if (menuNav == 6){      // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
-    //if (skyllFerdig) {
+    if (menuNav == 6) {     // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
+      //if (skyllFerdig) {
       Steg = 7;
       Serial.println("Steg 6"); //Pulse pumpe
 
       //Oppsett av timer for avrenning.
       int t3 = 0, i3 = 0;
-      
+
       if (avrenningstid >= 60) {
         t3 = avrenningstid / 60;
         i3 = avrenningstid % 60;
@@ -950,11 +944,11 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     pulsepumpe();
     getSensordata();
     lukkemellomstegsventil();
-    if ((mesketankTom == true)||(avrenningFerdig == true)) {
-      if (mesketankTom == true){
+    if ((mesketankTom == true) || (avrenningFerdig == true)) {
+      if (mesketankTom == true) {
         Steg = 9;
       }
-      else{
+      else {
         Steg = 8;
       }
       Serial.println("Steg 7");
@@ -973,7 +967,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (mesketankTom == true) {
       Steg = 9;
       init_mellomstegsventil();
-      
+
     }
 
   }
@@ -988,7 +982,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   }
   //10. pumpe opp fra mellomsteg
   else if ((Steg == 10) && (Start == true)) {
-  
+
     getSensordata();
 
     if (mellomstegTom == true) {
@@ -1200,7 +1194,7 @@ void solenoid() {
       digitalWrite(s9, HIGH);
     }
 
-    else if (Steg == 7) { //AVRENNING - pulsepumpe 
+    else if (Steg == 7) { //AVRENNING - pulsepumpe
       digitalWrite(s0, LOW);
       digitalWrite(s1, LOW);   //AKTIV LAV
       digitalWrite(s2, HIGH);
@@ -1437,16 +1431,16 @@ void lukkemellomstegsventil() {
 void pumpe() {
   button = digitalRead(buttonpin);
 
-  if (button && !oldbutton) { 
-    if (Pumpe == false) { 
+  if (button && !oldbutton) {
+    if (Pumpe == false) {
       Pumpe = true;
     }
-    else { 
+    else {
       Pumpe = false;
     }
     oldbutton = 1;
   }
-  else if (!button && oldbutton) 
+  else if (!button && oldbutton)
   {
     oldbutton = 0;
   }
@@ -1470,7 +1464,7 @@ void lokk() {
       Lokk = false;
     }
     lokkOldbutton = 1;
-    Serial.println("pressed");
+    //Serial.println("pressed");
   }
 
   else if (!lokkButton && lokkOldbutton) {
@@ -1487,25 +1481,49 @@ void lokk() {
 
 
 void getSensordata() {
+  /*
+    Wire.requestFrom(9, 4);
+    analog_mesktemp = Wire.read();
+    analog_mesktemp |= (Wire.read() << 8);
+    mellomstegTom = Wire.read();
+    mesketankTom = Wire.read();
+  */
 
-  Wire.requestFrom(9, 4);
-  analog_mesktemp = Wire.read();
-  analog_mesktemp |= (Wire.read() << 8);
-  mellomstegTom = Wire.read();
-  mesketankTom = Wire.read();
+  if (CAN_MSGAVAIL == CAN.checkReceive()) {
+    unsigned char len = 0;
+    CAN.readMsgBuf(&len, CANbuf);
+    analog_mesktemp = CANbuf[0];
+    analog_mesktemp |= CANbuf[1] << 8;
+    mellomstegTom = CANbuf[2];
+    mesketankTom = CANbuf[3];
+  }
 
 }
 
-void getAnalogdata(){
+void getAnalogdata() {
   //analog_mesktemp = analogRead(0); moved this sensor to sensornode
 
-  Wire.requestFrom(9, 2);
-  analog_mesktemp = Wire.read();
-  analog_mesktemp |= (Wire.read() << 8);
+  //Wire.requestFrom(9, 2);
+  //analog_mesktemp = Wire.read();
+  //analog_mesktemp |= (Wire.read() << 8);
   analog_koktopptemp = analogRead(1);
   analog_kokbunntemp = analogRead(2);
+
+  if (CAN_MSGAVAIL == CAN.checkReceive()) {
+    unsigned char len = 0;
+    CAN.readMsgBuf(&len, CANbuf);
+    analog_mesktemp = CANbuf[0];
+    analog_mesktemp |= CANbuf[1] << 8;
+    mellomstegTom = CANbuf[2];
+    mesketankTom = CANbuf[3];
+  }
+
 }
 
+int getPumpCurrent() {
+  int c = analogRead(0);
+          return c;
+}
 
 void setup() {//SETUP           SETUP           SETUP           SETUP           SETUP            SETUP            SETUP
   Ethernet.begin(mac, ip, dns, gateway, subnet);
@@ -1593,6 +1611,15 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   timer.setCounter(0, 0, 1, timer.COUNT_DOWN, timerComplete);
   timer.start();
   timer.setInterval(print_time2, 1000); // kan ikke fjernes
+
+  while (CAN_OK != CAN.begin(CAN_1000KBPS))              // init can bus : baudrate = 500k
+  {
+    Serial.println("CAN BUS Shield init fail");
+    Serial.println(" Init CAN BUS Shield again");
+    delay(100);
+  }
+  Serial.println("CAN BUS Shield init ok!");
+
 }
 
 
@@ -1603,20 +1630,22 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
 void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN
   aOPC.processOPCCommands();
   noInterrupts();
-    timer.run();
-    Now = millis();
+  timer.run();
+  Now = millis();
   interrupts();
   getAnalogdata();
   lcdLoop();
   Input = koktemp();
   sekvens();
-  
-  if (Now - windowStartTime > 500){
+
+  if (Now - windowStartTime > 500) {
     solenoid();
     pumpe();
     lokk();
     windowStartTime += 500;
+    Serial.println(getPumpCurrent());
   }
+
   Setpoint = Setpunkt(Steg, MeskSet, striketemp);
   varmeReg();
 
