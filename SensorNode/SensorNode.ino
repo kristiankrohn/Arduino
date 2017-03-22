@@ -32,7 +32,7 @@ void setup() {
     delay(100);
   }
   Serial.println("CAN BUS Shield init ok!");
-
+  delay(5000);
 }
 
 void loop() {
@@ -42,15 +42,15 @@ void loop() {
   mesketankTom = digitalRead(mesketank);
   Serial.println(mesketemp);
   int mesketempMSB = mesketemp >> 8;
-  unsigned char stmp[8] = {char(mesketemp), char(mesketempMSB), char(mellomstegTom, mesketankTom, 4, 5, 6, 7};
+  unsigned char stmp[8] = {mesketemp, mesketempMSB, mellomstegTom, mesketankTom, 4, 5, 6, 7};
   // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
   CAN.sendMsgBuf(0x00, 0, 8, stmp);
-  delay(100)
+  
   if (mellomstegTom) {
     digitalWrite(13, HIGH);
   }
   else {
     digitalWrite(13, LOW);
   }
-
+  delay(200);
 }
