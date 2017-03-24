@@ -90,8 +90,8 @@ int kokepunkt = 990; // HUSK Å KALIBRERE DENNE
 int mesketid = 90;
 int koketid = 90;
 int avrenningstid = 15; //Minutter
-const float pumpekonstant = 14.25; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
-int MeskSet = 631;
+const float pumpekonstant = 12; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
+int MeskSet = 722;
 int regventpower = 33;
 int regventretning = 34;
 int man_volum;
@@ -215,8 +215,8 @@ int analogToCelcius(int analog) {
     float x;
     x = (float)analog;
     y2 = 7.303936479 * pow(10, -6) * pow(x, 2);
-    y1 = 8.864423369 * x;
-    y0 = 5.550170204;
+    y1 = 8.864423369 * pow(10, -2)* x;
+    y0 = 5.550170204 * pow(10, -1);
     y = y2 + y1 - y0 ;
 
   return (int) constrain(y, 0, 99);
@@ -393,19 +393,25 @@ void writeSkjermbuffer() {
           stringSteg = "Standby";
         }
         else if (Steg == 1) {
-          stringSteg = "Fyller vann";
+          stringSteg = String("Fyller vann: " + String(koketankvolum));
         }
         else if (Steg == 2) {
-          stringSteg = "Varmer vann";
+          stringSteg = String("Varmer vann til: " + String(analogToCelcius(striketemp)));
         }
         else if (Steg == 3) {
           stringSteg = "Strike";
+          String TimerTimer = String(timer.getCurrentTime());
+        printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 4) {
           stringSteg = "Lufting";
+          String TimerTimer = String(timer.getCurrentTime());
+        printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 5) {
           stringSteg = "Mesking";
+          String TimerTimer = String(timer.getCurrentTime());
+        printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 6) {
           stringSteg = "Skylling, entr fr nxt";
@@ -418,6 +424,8 @@ void writeSkjermbuffer() {
         }
         else if (Steg == 12) {
           stringSteg = "Koking";
+          String TimerTimer = String(timer.getCurrentTime());
+        printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 13) {
           stringSteg = "Nedkjøling";
@@ -428,8 +436,7 @@ void writeSkjermbuffer() {
         printString(String("Mesketemperatur: " + mesketemp), 1);
         String koketemp = String(analogToCelcius(koktemp()));
         printString(String("Koketemperatur: " + koketemp), 2);
-        String TimerTimer = String(timer.getCurrentTime());
-        printString(String("Timer: " + TimerTimer), 3);
+        
       }
       break;
 
@@ -733,7 +740,15 @@ int write_input(const char *itemID, const opcOperation opcOP, const int value) {
   return Input;
 }
 
+int koketankvolumRW(const char *itemID, const opcOperation opcOP, const int value) {
 
+  if (opcOP == opc_write) {
+    koketankvolum = value;
+  }
+  else {
+    return koketankvolum;
+  }
+}
 
 int koktemp() {
   int temp1, temp2, tempsnitt, temp;
@@ -747,17 +762,22 @@ int koktemp() {
   return temp;
 }
 
-int Setpunkt(int Steg, int MeskSet, int striketemp) {
+int Setpunkt() {
   int Setpunkt;
   int meskset;
   int k = 1024;
 
-  meskset = MeskSet + 2;
-  striketemp = MeskSet + 5;
-  if (Steg == 2) {
+  meskset = MeskSet + 20;
+  striketemp = MeskSet + 40;
+  
+  if ((Steg == 1)&&(koketankvolum > 35)) {
     Setpunkt = striketemp;
   }
 
+  if (Steg == 2) {
+    Setpunkt = striketemp;
+  }
+  
   else if (Steg == 5) {
     Setpunkt = meskset;
   }
@@ -772,7 +792,7 @@ int Setpunkt(int Steg, int MeskSet, int striketemp) {
     }
 
     else if (manmesk) {
-      Setpunkt = man_mesktemp + 2;
+      Setpunkt = man_mesktemp + 20;
     }
   }
   else {
@@ -790,6 +810,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       Steg = 1;
       tick = 0;
       screen = 7;
+      //striketemp = MeskSet + 40;
       Serial.println("Steg 1");
     }
   }
@@ -802,19 +823,21 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (koketankvolum >= (meskevolum + skyllevolum)) { //Når koketankvolum = meskevolum + skyllevolum
 
       Serial.println("Steg 2");
-
+      
       Steg = 2;
       Pumpe = true;
+      
     }
   }
 
 
   else if ((Steg == 2) && (Start == true)) {
     //Varmer opp vannet i koketanken til striketemp
-
+    
     if (Input >= striketemp) { //koketanktemp == Input
       Steg = 3;
-
+      Serial.print("Striketemp var: ");
+      Serial.println(striketemp);
       Pumpe = true;
       // Oppsett av timer for neste steg.
       int striketid;
@@ -947,6 +970,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if ((mesketankTom == true) || (avrenningFerdig == true)) {
       if (mesketankTom == true) {
         Steg = 9;
+        timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
+        timer.start();
       }
       else {
         Steg = 8;
@@ -954,8 +979,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       Serial.println("Steg 7");
       init_mellomstegsventil();
       //Oppsett timer lufting
-      timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
-      timer.start();
+      
       Pumpe = false;
     }
   }
@@ -967,7 +991,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (mesketankTom == true) {
       Steg = 9;
       init_mellomstegsventil();
-
+      timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
+      timer.start();
     }
 
   }
@@ -1494,8 +1519,8 @@ void getSensordata() {
     CAN.readMsgBuf(&len, CANbuf);
     analog_mesktemp = CANbuf[0];
     analog_mesktemp |= CANbuf[1] << 8;
-    mellomstegTom = CANbuf[2];
-    mesketankTom = CANbuf[3];
+    mellomstegTom = bool(CANbuf[2]);
+    mesketankTom = bool(CANbuf[3]);
   }
 
 }
@@ -1514,8 +1539,8 @@ void getAnalogdata() {
     CAN.readMsgBuf(&len, CANbuf);
     analog_mesktemp = CANbuf[0];
     analog_mesktemp |= CANbuf[1] << 8;
-    mellomstegTom = CANbuf[2];
-    mesketankTom = CANbuf[3];
+    mellomstegTom = bool(CANbuf[2]);
+    mesketankTom = bool(CANbuf[3]);
   }
 
 }
@@ -1607,6 +1632,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   aOPC.addItem("Setpoint", opc_readwrite, opc_int, write_setpoint);
   aOPC.addItem("Output", opc_readwrite, opc_int, write_output);
   aOPC.addItem("Input", opc_readwrite, opc_int, write_input);
+  aOPC.addItem("Koketankvolum", opc_readwrite, opc_int, koketankvolumRW);
 
   timer.setCounter(0, 0, 1, timer.COUNT_DOWN, timerComplete);
   timer.start();
@@ -1636,17 +1662,18 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   getAnalogdata();
   lcdLoop();
   Input = koktemp();
+  Setpoint = Setpunkt();
   sekvens();
-
+  
+  varmeReg();
   if (Now - windowStartTime > 500) {
     solenoid();
     pumpe();
     lokk();
     windowStartTime += 500;
-    Serial.println(getPumpCurrent());
+    //Serial.println(getPumpCurrent());
   }
 
-  Setpoint = Setpunkt(Steg, MeskSet, striketemp);
-  varmeReg();
+  
 
 }

@@ -40,7 +40,13 @@ void loop() {
   mesketemp = analogRead(1);
   mellomstegTom = digitalRead(mellomsteg);
   mesketankTom = digitalRead(mesketank);
-  Serial.println(mesketemp);
+  //Serial.println(mesketemp);
+  
+  //Serial.print("Mellomsteg :");
+  //Serial.println(mellomstegTom);
+  //Serial.print("Mesketank :");
+  //Serial.println(mesketankTom);
+  
   int mesketempMSB = mesketemp >> 8;
   unsigned char stmp[8] = {mesketemp, mesketempMSB, mellomstegTom, mesketankTom, 4, 5, 6, 7};
   // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
