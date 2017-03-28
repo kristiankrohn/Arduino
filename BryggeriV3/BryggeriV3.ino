@@ -212,12 +212,12 @@ void menuNavigation() {
 int analogToCelcius(int analog) {
   //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
   float y2, y1, y0, y;
-    float x;
-    x = (float)analog;
-    y2 = 7.303936479 * pow(10, -6) * pow(x, 2);
-    y1 = 8.864423369 * pow(10, -2)* x;
-    y0 = 5.550170204 * pow(10, -1);
-    y = y2 + y1 - y0 ;
+  float x;
+  x = (float)analog;
+  y2 = 7.303936479 * pow(10, -6) * pow(x, 2);
+  y1 = 8.864423369 * pow(10, -2) * x;
+  y0 = 5.550170204 * pow(10, -1);
+  y = y2 + y1 - y0 ;
 
   return (int) constrain(y, 0, 99);
 }
@@ -225,18 +225,18 @@ int analogToCelcius(int analog) {
 int celciusToAnalog(int celcius) {
   //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
   float y8, y7, y6, y5, y4, y3, y2, y1, y0, y;
-    float x;
-    x = (float)celcius;
-    y8 = 7.65775221  * pow(10, -11) * pow(x, 8); 
-    y7 = 3.125765713 * pow(10, -8) * pow(x, 7);
-    y6 = 5.364581341 * pow(10, -6) * pow(x, 6);
-    y5 = 5.028645646 * pow(10, -4) * pow(x, 5);
-    y4 = 2.795824874 * pow(10, -2) * pow(x, 4);
-    y3 = 9.350909963 * pow(10, -1) * pow(x, 3);
-    y2 = 18.1332556  * pow(x, 2);
-    y1 = 172.4566288 * x;
-    y0 = 733.2841988;
-    y = y8 - y7 + y6 - y5 + y4 - y3 + y2 - y1 + y0;
+  float x;
+  x = (float)celcius;
+  y8 = 7.65775221  * pow(10, -11) * pow(x, 8);
+  y7 = 3.125765713 * pow(10, -8) * pow(x, 7);
+  y6 = 5.364581341 * pow(10, -6) * pow(x, 6);
+  y5 = 5.028645646 * pow(10, -4) * pow(x, 5);
+  y4 = 2.795824874 * pow(10, -2) * pow(x, 4);
+  y3 = 9.350909963 * pow(10, -1) * pow(x, 3);
+  y2 = 18.1332556  * pow(x, 2);
+  y1 = 172.4566288 * x;
+  y0 = 733.2841988;
+  y = y8 - y7 + y6 - y5 + y4 - y3 + y2 - y1 + y0;
 
   return (int) constrain(y, 0, 1023);
 }
@@ -401,17 +401,17 @@ void writeSkjermbuffer() {
         else if (Steg == 3) {
           stringSteg = "Strike";
           String TimerTimer = String(timer.getCurrentTime());
-        printString(String("Timer: " + TimerTimer), 3);
+          printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 4) {
           stringSteg = "Lufting";
           String TimerTimer = String(timer.getCurrentTime());
-        printString(String("Timer: " + TimerTimer), 3);
+          printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 5) {
           stringSteg = "Mesking";
           String TimerTimer = String(timer.getCurrentTime());
-        printString(String("Timer: " + TimerTimer), 3);
+          printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 6) {
           stringSteg = "Skylling, entr fr nxt";
@@ -425,7 +425,7 @@ void writeSkjermbuffer() {
         else if (Steg == 12) {
           stringSteg = "Koking";
           String TimerTimer = String(timer.getCurrentTime());
-        printString(String("Timer: " + TimerTimer), 3);
+          printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 13) {
           stringSteg = "Nedkjøling";
@@ -436,7 +436,7 @@ void writeSkjermbuffer() {
         printString(String("Mesketemperatur: " + mesketemp), 1);
         String koketemp = String(analogToCelcius(koktemp()));
         printString(String("Koketemperatur: " + koketemp), 2);
-        
+
       }
       break;
 
@@ -768,16 +768,16 @@ int Setpunkt() {
   int k = 1024;
 
   meskset = MeskSet + 20;
-  striketemp = MeskSet + 40;
-  
-  if ((Steg == 1)&&(koketankvolum > 35)) {
+  striketemp = MeskSet + 30;
+
+  if ((Steg == 1) && (koketankvolum > 35)) {
     Setpunkt = striketemp;
   }
 
   if (Steg == 2) {
     Setpunkt = striketemp;
   }
-  
+
   else if (Steg == 5) {
     Setpunkt = meskset;
   }
@@ -823,17 +823,17 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (koketankvolum >= (meskevolum + skyllevolum)) { //Når koketankvolum = meskevolum + skyllevolum
 
       Serial.println("Steg 2");
-      
+
       Steg = 2;
       Pumpe = true;
-      
+
     }
   }
 
 
   else if ((Steg == 2) && (Start == true)) {
     //Varmer opp vannet i koketanken til striketemp
-    
+
     if (Input >= striketemp) { //koketanktemp == Input
       Steg = 3;
       Serial.print("Striketemp var: ");
@@ -979,7 +979,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       Serial.println("Steg 7");
       init_mellomstegsventil();
       //Oppsett timer lufting
-      
+
       Pumpe = false;
     }
   }
@@ -1062,6 +1062,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       Start = false;
       luftingFerdig = false;
       luftemellomsteg = false;
+      screen = 0;
     }
   }
 
@@ -1401,15 +1402,19 @@ void init_varmereg() {
 }
 
 void varmeReg() {
-
-  if ((Now - varmeStartTime) > 10000) { //time to shift the Relay Window
-    if (Setpoint >= Input) {
-      digitalWrite(varmePin, LOW); // Aktiv lav
+  if (Steg != 0) {
+    if ((Now - varmeStartTime) > 10000) { //time to shift the Relay Window
+      if (Setpoint >= Input) {
+        digitalWrite(varmePin, LOW); // Aktiv lav
+      }
+      else {
+        digitalWrite(varmePin, HIGH);
+      }
+      varmeStartTime += 10000;
     }
-    else {
-      digitalWrite(varmePin, HIGH);
-    }
-    varmeStartTime += 10000;
+  }
+  else {
+    digitalWrite(varmePin, HIGH);
   }
 }
 
@@ -1547,7 +1552,7 @@ void getAnalogdata() {
 
 int getPumpCurrent() {
   int c = analogRead(0);
-          return c;
+  return c;
 }
 
 void setup() {//SETUP           SETUP           SETUP           SETUP           SETUP            SETUP            SETUP
@@ -1664,7 +1669,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   Input = koktemp();
   Setpoint = Setpunkt();
   sekvens();
-  
+
   varmeReg();
   if (Now - windowStartTime > 500) {
     solenoid();
@@ -1674,6 +1679,6 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
     //Serial.println(getPumpCurrent());
   }
 
-  
+
 
 }
