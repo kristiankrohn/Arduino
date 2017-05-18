@@ -32,18 +32,18 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 OPCEthernet aOPC;
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-
+/*
 IPAddress ip(10, 0, 0, 100);
 IPAddress gateway(10, 0, 0, 1);
 IPAddress dns_server(10, 0, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
+*/
 
-/*
   IPAddress ip(192, 168, 0, 100);
   IPAddress gateway(192, 168, 0, 1);
   IPAddress dns_server(192, 168, 0, 1);
   IPAddress subnet(255, 255, 255, 0);
-*/
+
 
 const int listen_port = 80;
 
@@ -77,6 +77,7 @@ bool Start;
 bool mesketankTom = false;
 bool mellomstegTom = false;
 bool luftemellomsteg = false;
+bool Lokk;
 int resetindicator;
 int Steg;
 int meskevolum = 40;  // FJERN TILORDNING ETTER TESTING
@@ -87,10 +88,11 @@ int striketemp;
 int skylletemp;
 int pitchtemp = 226; // HUSK Å KALIBRERE DENNE
 int kokepunkt = 990; // HUSK Å KALIBRERE DENNE
-int mesketid = 90;
-int koketid = 90;
+int mesketid = 60;
+int koketid = 60;
 int avrenningstid = 15; //Minutter
 const float pumpekonstant = 12; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
+const int flowmeterkonstant = 140.5;
 int MeskSet = 722;
 int regventpower = 33;
 int regventretning = 34;
@@ -481,9 +483,11 @@ void writeSkjermbuffer() {
       }
       break;
     case 35: {
-        man_volum = man_tick / 142;
+        man_volum = man_tick / flowmeterkonstant;
         String manvolum = String(man_volum);
+        String mantick = String(man_tick);
         printString(String("Volum: " + manvolum), 1);
+        printString(String("Ticks: " + mantick), 2);
       }
       break;
     case 37: {
@@ -750,6 +754,21 @@ int koketankvolumRW(const char *itemID, const opcOperation opcOP, const int valu
   }
 }
 
+bool lokkRW(const char *itemID, const opcOperation opcOP, const bool value) {
+  static bool lokkValue = true;
+  if (opcOP == opc_opwrite) {
+    lokkValue = value;
+
+    if (lokkValue)
+      Lokk = true;
+    else
+      Lokk = false;
+  }
+  else
+    return Lokk;
+}
+
+
 int koktemp() {
   int temp1, temp2, tempsnitt, temp;
   temp1 = analog_koktopptemp;
@@ -768,7 +787,7 @@ int Setpunkt() {
   int k = 1024;
 
   meskset = MeskSet + 20;
-  striketemp = MeskSet + 30;
+  striketemp = MeskSet + 20;
 
   if ((Steg == 1) && (koketankvolum > 35)) {
     Setpunkt = striketemp;
@@ -818,7 +837,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
   else if ((Steg == 1) && (Start == true)) {
     //Fyller vann i koketanken
-    koketankvolum = tick / 142; //148,15 tics/L
+    koketankvolum = tick / flowmeterkonstant; //148,15 tics/L
 
     if (koketankvolum >= (meskevolum + skyllevolum)) { //Når koketankvolum = meskevolum + skyllevolum
 
@@ -834,7 +853,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   else if ((Steg == 2) && (Start == true)) {
     //Varmer opp vannet i koketanken til striketemp
 
-    if (Input >= striketemp) { //koketanktemp == Input
+    if ((Input >= striketemp) && (menuNav == 6)) { //koketanktemp == Input
       Steg = 3;
       Serial.print("Striketemp var: ");
       Serial.println(striketemp);
@@ -1351,6 +1370,8 @@ void opneRegvent() {
     if (5000 > (Now - ventilStartTime)) {
       digitalWrite(regventpower, LOW);
       digitalWrite(regventretning, LOW);
+    } else  {
+      digitalWrite(regventpower, HIGH);
     }
   }
 }
@@ -1360,6 +1381,8 @@ void lukkeRegvent() {
   if (5000 > (Now - ventilStartTime)) {
     digitalWrite(regventpower, LOW);
     digitalWrite(regventretning, HIGH);
+  } else {
+    digitalWrite(regventpower, HIGH);
   }
 }
 
@@ -1482,7 +1505,7 @@ void pumpe() {
     digitalWrite(pumpePin, HIGH);
   }
 }
-bool Lokk;
+
 void lokk() {
   lokkButton = digitalRead(lokkButtonpin);
 
@@ -1638,7 +1661,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   aOPC.addItem("Output", opc_readwrite, opc_int, write_output);
   aOPC.addItem("Input", opc_readwrite, opc_int, write_input);
   aOPC.addItem("Koketankvolum", opc_readwrite, opc_int, koketankvolumRW);
-
+  aOPC.addItem("Lokk", opc_readwrite, opc_bool, lokkRW);
   timer.setCounter(0, 0, 1, timer.COUNT_DOWN, timerComplete);
   timer.start();
   timer.setInterval(print_time2, 1000); // kan ikke fjernes
@@ -1660,10 +1683,10 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
 
 void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN
   aOPC.processOPCCommands();
-  noInterrupts();
+  //noInterrupts();
   timer.run();
   Now = millis();
-  interrupts();
+  //interrupts();
   getAnalogdata();
   lcdLoop();
   Input = koktemp();
