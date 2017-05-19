@@ -6,7 +6,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <mcp_can.h>
-
+#include <EEPROM.h>
 Countimer timer;
 
 

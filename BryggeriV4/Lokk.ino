@@ -5,8 +5,14 @@ int lokkPin = 38;
 
 void LokkInit(){
   pinMode(lokkPin, OUTPUT);
-  digitalWrite(lokkPin, HIGH);
   pinMode(lokkButtonpin, INPUT_PULLUP);
+  Lokk = EEPROM.read(0);
+  if (Lokk) {
+    digitalWrite(lokkPin, LOW);
+  }
+  else{
+    digitalWrite(lokkPin, HIGH);
+  }
 }
 
 void lokk() {
@@ -15,12 +21,13 @@ void lokk() {
   if (lokkButton && !lokkOldbutton) {
     if (Lokk == false) {
       Lokk = true;
+       EEPROM.write(0, Lokk);
     }
     else {
       Lokk = false;
+       EEPROM.write(0, Lokk);
     }
     lokkOldbutton = 1;
-    //Serial.println("pressed");
   }
 
   else if (!lokkButton && lokkOldbutton) {

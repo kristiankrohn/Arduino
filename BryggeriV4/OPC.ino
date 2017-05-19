@@ -196,6 +196,7 @@ bool lokkRW(const char *itemID, const opcOperation opcOP, const bool value) {
       Lokk = true;
     else
       Lokk = false;
+    EEPROM.write(0, Lokk);
   }
   else
     return Lokk;
