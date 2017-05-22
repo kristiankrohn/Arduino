@@ -175,15 +175,16 @@ void writeSkjermbuffer() {
             screen = 44;
           }
         }
-        else if (screen = 42) { //Regvent
+        else if (screen == 42) { //Regvent
           screen = 43;
           EEPROMWriteInt(reguleringaapningAddr, reguleringaapning);
           init_reguleringsventil();
         }
-        else if (screen = 44) {
+        else if (screen == 44) {
           screen = 45;
           EEPROMWriteInt(mellomstegaapningAddr, mellomstegaapning);
           init_mellomstegsventil();
+          
         }
       }
       break;
@@ -406,7 +407,7 @@ void writeSkjermbuffer() {
       break;
     case 43: {
         reguleringsventilSkyll(reguleringaapning);
-        printString("Changes saved", 1);
+        printString("Regvent saved", 1);
       }
       break;
     case 44: {
@@ -419,8 +420,9 @@ void writeSkjermbuffer() {
       break;
     case 45: {
         mellomstegsventil(mellomstegaapning);
-        printString("Changes Saved", 1);
+        printString("Mellomstg Saved", 1);
       }
+      break;
   }
 
   if (screen == 32) {
@@ -464,7 +466,7 @@ int changeVariable(int i) {
   else if (menuNav == 2) {
     i--;
   }
-  i = min(i, 0);
+  i = max(i, 0);
   return i;
 }
 
@@ -475,7 +477,7 @@ int changeVariableTens(int i) {
   else if (menuNav == 2) {
     i = i - 10;
   }
-  i = min(i, 0);
+  i = max(i, 0);
   return i;
 }
 
@@ -486,7 +488,7 @@ int changeVariableHunds(int i) {
   else if (menuNav == 2) {
     i = i - 100;
   }
-  i = min(i, 0);
+  i = max(i, 0);
   return i;
 }
 
@@ -540,7 +542,7 @@ void lcdInit() {
   printString("    Laget av:", 1);
   printString("Krohn & Hoel Eng.", 2);
   printBuffer(skjermbuffer);
-  delay(3000);
+  delay(1000);
   screenStartTime = millis();
 }
 

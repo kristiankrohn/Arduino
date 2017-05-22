@@ -123,7 +123,7 @@ void reguleringsventil(int mesk_set) {  //Vurder å skrive om til PWM modulert P
 void reguleringsventilSkyll(int aapningstid){
     if ((Now - ventilStartTime) < aapningstid) {
     digitalWrite(regventpower, LOW);
-    digitalWrite(regventretning, HIGH);
+    digitalWrite(regventretning, LOW);
   } else {
     digitalWrite(regventpower, HIGH);
   }
@@ -371,8 +371,10 @@ void solenoid() {
       digitalWrite(s7, HIGH);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
-      digitalWrite(mellomstegpower, HIGH);
-      digitalWrite(mellomstegretning, HIGH);
+      if (screen < 40){
+        digitalWrite(mellomstegpower, HIGH);
+        digitalWrite(mellomstegretning, HIGH);
+      }
     }
   }
 }

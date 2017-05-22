@@ -61,7 +61,7 @@ void EEPROMWriteInt(int p_address, int p_value)
      }
 
 //This function will read a 2 byte integer from the eeprom at the specified address and address + 1
-unsigned int EEPROMReadInt(int p_address)
+int EEPROMReadInt(int p_address)
      {
      byte lowByte = EEPROM.read(p_address);
      byte highByte = EEPROM.read(p_address + 1);
@@ -72,7 +72,11 @@ unsigned int EEPROMReadInt(int p_address)
 
 void VariablesInit(){
   mellomstegaapning = EEPROMReadInt(mellomstegaapningAddr);
-  reguleringaapning = EEPROMReadInt(mellomstegaapningAddr);
+  reguleringaapning = EEPROMReadInt(reguleringaapningAddr);
+  Serial.print("Mellomsteg loaded: ");
+  Serial.println(mellomstegaapning);
+  Serial.print("Regvent loaded: ");
+  Serial.println(reguleringaapning);
 }
 
 
