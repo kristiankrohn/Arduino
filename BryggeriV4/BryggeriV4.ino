@@ -40,14 +40,40 @@ int avrenningstid = 15; //Minutter
 const float pumpekonstant = 12; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
 const int flowmeterkonstant = 140.5;
 int MeskSet;
-
+int mellomstegaapning;
+int reguleringaapning;
+int mellomstegaapningAddr = 2;
+int reguleringaapningAddr = 4;
 int screen = 0;
 bool Pumpe;
 int analog_mesktemp;
 int analog_koktopptemp;
 int analog_kokbunntemp;
 
+//This function will write a 2 byte integer to the eeprom at the specified address and address + 1
+void EEPROMWriteInt(int p_address, int p_value)
+     {
+     byte lowByte = ((p_value >> 0) & 0xFF);
+     byte highByte = ((p_value >> 8) & 0xFF);
 
+     EEPROM.write(p_address, lowByte);
+     EEPROM.write(p_address + 1, highByte);
+     }
+
+//This function will read a 2 byte integer from the eeprom at the specified address and address + 1
+unsigned int EEPROMReadInt(int p_address)
+     {
+     byte lowByte = EEPROM.read(p_address);
+     byte highByte = EEPROM.read(p_address + 1);
+
+     return ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
+     }
+
+
+void VariablesInit(){
+  mellomstegaapning = EEPROMReadInt(mellomstegaapningAddr);
+  reguleringaapning = EEPROMReadInt(mellomstegaapningAddr);
+}
 
 
 void setup() {//SETUP           SETUP           SETUP           SETUP           SETUP            SETUP            SETUP
@@ -55,6 +81,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   Wire.begin(8);
   pinMode(4, OUTPUT); // Disable SDcard reader on ethernet shield
   digitalWrite(4, HIGH);
+  VariablesInit();
   LokkInit();
   VentilInit();
   PumpeInit();

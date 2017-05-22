@@ -11,6 +11,7 @@ int man_koktemp;
 int man_koktempC = 67;
 int man_mesktemp;
 int man_mesktempC = 67;
+
 bool Back, Down, Up, Enter;
 bool oldBack, oldDown, oldUp, oldEnter;
 int8_t menuPos = 0;
@@ -163,6 +164,27 @@ void writeSkjermbuffer() {
           screen = 34;
           man_mesktemp = celciusToAnalog(man_mesktempC);
         }
+        else if (screen == 40) {
+          if (menuPos == 0) {
+            screen = 41;
+          }
+          else if (menuPos == 1) {
+            screen = 42;
+          }
+          else if (menuPos == 2) {
+            screen = 44;
+          }
+        }
+        else if (screen = 42) { //Regvent
+          screen = 43;
+          EEPROMWriteInt(reguleringaapningAddr, reguleringaapning);
+          init_reguleringsventil();
+        }
+        else if (screen = 44) {
+          screen = 45;
+          EEPROMWriteInt(mellomstegaapningAddr, mellomstegaapning);
+          init_mellomstegsventil();
+        }
       }
       break;
     case 4: {
@@ -186,6 +208,12 @@ void writeSkjermbuffer() {
         }
         else if (screen == 40) {
           screen = 0;
+        }
+        else if (screen == 42) {
+          screen = 40;
+        }
+        else if (screen == 44) {
+          screen = 40;
         }
         else {
           screen--;
@@ -213,14 +241,14 @@ void writeSkjermbuffer() {
     case 2: {
         String meskeTidString = String(mesketid);
         printString(String("Mesketid = " + meskeTidString), 1);
-        mesketid = changeVariable(mesketid);
+        mesketid = changeVariableTens(mesketid);
       }
       break;
 
     case 3: {
         String kokeTidString = String(koketid);
         printString(String("Koketid = " + kokeTidString), 1);
-        koketid = changeVariable(koketid);
+        koketid = changeVariableTens(koketid);
       }
       break;
 
@@ -356,11 +384,43 @@ void writeSkjermbuffer() {
       }
       break;
     case 40: {
+        printString("Analog 0", 0);
+        printString("Reguleringsventil", 1);
+        printString("Mellomstegsventil", 2);
+        printArrow();
 
+      }
+      break;
+    case 41: {
         String analog0 = String(analog_mesktemp);
         printString(String("Analog 0 = " + analog0), 1);
       }
       break;
+    case 42: {
+        lukkeRegventUpower();
+        reguleringaapning = changeVariableHunds(reguleringaapning);
+        String regventaapningString = String(reguleringaapning);
+        printString("Regvent tuning", 0);
+        printString(String("Timer = :" + regventaapningString), 1);
+      }
+      break;
+    case 43: {
+        reguleringsventilSkyll(reguleringaapning);
+        printString("Changes saved", 1);
+      }
+      break;
+    case 44: {
+        lukkemellomstegsventil();
+        mellomstegaapning = changeVariableHunds(mellomstegaapning);
+        String mellomstegaapningString = String(mellomstegaapning);
+        printString("Mellomsteg tuning", 0);
+        printString(String("Timer = " + mellomstegaapningString), 1);
+      }
+      break;
+    case 45: {
+        mellomstegsventil(mellomstegaapning);
+        printString("Changes Saved", 1);
+      }
   }
 
   if (screen == 32) {
@@ -404,6 +464,29 @@ int changeVariable(int i) {
   else if (menuNav == 2) {
     i--;
   }
+  i = min(i, 0);
+  return i;
+}
+
+int changeVariableTens(int i) {
+  if (menuNav == 8) {
+    i = i + 10;
+  }
+  else if (menuNav == 2) {
+    i = i - 10;
+  }
+  i = min(i, 0);
+  return i;
+}
+
+int changeVariableHunds(int i) {
+  if (menuNav == 8) {
+    i = i + 100;
+  }
+  else if (menuNav == 2) {
+    i = i - 100;
+  }
+  i = min(i, 0);
   return i;
 }
 

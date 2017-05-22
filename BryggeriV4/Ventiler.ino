@@ -83,6 +83,11 @@ void lukkeRegvent() {
   }
 }
 
+void lukkeRegventUpower(){
+    digitalWrite(regventpower, LOW);
+    digitalWrite(regventretning, HIGH);
+}
+
 void reguleringsventil(int mesk_set) {  //Vurder å skrive om til PWM modulert PI reg
   bool c;
   c = digitalRead(5);
@@ -112,6 +117,15 @@ void reguleringsventil(int mesk_set) {  //Vurder å skrive om til PWM modulert P
     else {
       digitalWrite(regventpower, HIGH);
     }
+  }
+}
+
+void reguleringsventilSkyll(int aapningstid){
+    if ((Now - ventilStartTime) < aapningstid) {
+    digitalWrite(regventpower, LOW);
+    digitalWrite(regventretning, HIGH);
+  } else {
+    digitalWrite(regventpower, HIGH);
   }
 }
 

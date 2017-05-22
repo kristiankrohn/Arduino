@@ -91,7 +91,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   else if ((Steg == 2) && (Start == true)) {
     //Varmer opp vannet i koketanken til striketemp
 
-    if ((Input >= striketemp) && (menuNav == 6)) { //koketanktemp == Input
+    //if ((Input >= striketemp) && (menuNav == 6)) { //koketanktemp == Input
+    if (Input >= striketemp) {
       Steg = 3;
       Serial.print("Striketemp var: ");
       Serial.println(striketemp);
@@ -193,8 +194,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
   else if ((Steg == 6) && (Start == true)) {
     // Skylling
-    opneRegvent();
-    mellomstegsventil(1200);
+    reguleringsventilSkyll(reguleringaapning);
+    mellomstegsventil(mellomstegaapning);
     if (menuNav == 6) {     // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
       //if (skyllFerdig) {
       Steg = 7;
