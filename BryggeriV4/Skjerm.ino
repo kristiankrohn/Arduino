@@ -186,9 +186,16 @@ void writeSkjermbuffer() {
           init_mellomstegsventil();
           
         }
+        else if ((screen == 43)||(screen == 45)){
+          screen = 40;
+        }
+
+        menuPos = 0;
+        
       }
       break;
     case 4: {
+        menuPos = 0;
         if (screen == 0) {
           screen = 0;
         }
