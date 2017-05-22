@@ -5,10 +5,10 @@ bool skyllFerdig = false;
 bool avrenningFerdig = false;
 bool luftingFerdig = false;
 unsigned long startTid;
+unsigned long delayTid;
 
 
-  
-void TimerInit(){ 
+void TimerInit() {
   timer.setCounter(0, 0, 1, timer.COUNT_DOWN, timerComplete);
   timer.start();
   timer.setInterval(print_time2, 1000); // kan ikke fjernes
@@ -43,14 +43,14 @@ void timerComplete() {
   }
 }
 
-void TimerReset(){
-      strikeFerdig == false;
-      meskFerdig = false;
-      skyllFerdig = false;
-      avrenningFerdig = false;
-      kokFerdig = false;
-      luftingFerdig = false;
-      luftemellomsteg = false;
+void TimerReset() {
+  strikeFerdig == false;
+  meskFerdig = false;
+  skyllFerdig = false;
+  avrenningFerdig = false;
+  kokFerdig = false;
+  luftingFerdig = false;
+  luftemellomsteg = false;
 }
 
 void print_time2() //Fjern etter testing
@@ -152,7 +152,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       else {
         i1 = mesketid;
       }
-      
+
       init_reguleringsventil();
       timer.setCounter(t1, i1, 0, timer.COUNT_DOWN, timerComplete);
       timer.start();
@@ -245,7 +245,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   //8. Renne resten ned i mellomsteg
   else if ((Steg == 8) && (Start == true)) {
     getSensordata();
-
+    mellomstegsventil(5000);
 
     if (mesketankTom == true) {
       Steg = 9;
@@ -270,18 +270,24 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     getSensordata();
 
     if (mellomstegTom == true) {
-      Steg = 11;
-      int t4 = 0, i4 = 0;
-      if (koketid >= 60) {
-        t4 = koketid / 60; //Timer
-        i4 = koketid % 60; //Minutter
+      if ((Now - delayTid) > 2000) {
+
+        int t4 = 0, i4 = 0;
+        if (koketid >= 60) {
+          t4 = koketid / 60; //Timer
+          i4 = koketid % 60; //Minutter
+        }
+        else {
+          i4 = koketid;
+        }
+        Pumpe = true;
+        timer.setCounter(t4, i4, 0, timer.COUNT_DOWN, timerComplete);
+        //Oppsett av timer for koking
+        Steg = 11;
       }
-      else {
-        i4 = koketid;
-      }
-      Pumpe = true;
-      timer.setCounter(t4, i4, 0, timer.COUNT_DOWN, timerComplete);
-      //Oppsett av timer for koking
+    }
+    else {
+      delayTid = millis();
     }
 
   }
