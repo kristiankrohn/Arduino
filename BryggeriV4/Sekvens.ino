@@ -245,7 +245,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   //8. Renne resten ned i mellomsteg
   else if ((Steg == 8) && (Start == true)) {
     getSensordata();
-    mellomstegsventil(5000);
+    mellomstegsventil(mellomstegaapning);
 
     if (mesketankTom == true) {
       Steg = 9;
