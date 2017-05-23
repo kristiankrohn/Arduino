@@ -17,7 +17,7 @@ int automan_knapp = 5;
 unsigned long pulseventilStartTime;
 unsigned long ventilStartTime;
 
-void VentilInit(){
+void VentilInit() {
   pinMode(mellomstegpower, OUTPUT);
   pinMode(mellomstegretning, OUTPUT);
   pinMode(regventpower, OUTPUT);
@@ -83,9 +83,9 @@ void lukkeRegvent() {
   }
 }
 
-void lukkeRegventUpower(){
-    digitalWrite(regventpower, LOW);
-    digitalWrite(regventretning, HIGH);
+void lukkeRegventUpower() {
+  digitalWrite(regventpower, LOW);
+  digitalWrite(regventretning, HIGH);
 }
 
 void reguleringsventil(int mesk_set) {  //Vurder å skrive om til PWM modulert PI reg
@@ -120,8 +120,8 @@ void reguleringsventil(int mesk_set) {  //Vurder å skrive om til PWM modulert P
   }
 }
 
-void reguleringsventilSkyll(int aapningstid){
-    if ((Now - ventilStartTime) < aapningstid) {
+void reguleringsventilSkyll(int aapningstid) {
+  if ((Now - ventilStartTime) < aapningstid) {
     digitalWrite(regventpower, LOW);
     digitalWrite(regventretning, LOW);
   } else {
@@ -165,15 +165,16 @@ void solenoid() {
     digitalWrite(s7, HIGH);
     digitalWrite(s8, HIGH);
     digitalWrite(s9, HIGH);
-    digitalWrite(mellomstegpower, LOW);
+    if (screen < 40) {
+      digitalWrite(mellomstegpower, LOW);
 
-    if (digitalRead(mellomsteg_knapp) == false) {
-      digitalWrite(mellomstegretning, LOW);
+      if (digitalRead(mellomsteg_knapp) == false) {
+        digitalWrite(mellomstegretning, LOW);
+      }
+      else {
+        digitalWrite(mellomstegretning, HIGH);
+      }
     }
-    else {
-      digitalWrite(mellomstegretning, HIGH);
-    }
-
   }
   else {
     if (Steg == 1) { // FYLLE VANN I KOKETANK
@@ -371,7 +372,7 @@ void solenoid() {
       digitalWrite(s7, HIGH);
       digitalWrite(s8, HIGH);
       digitalWrite(s9, HIGH);
-      if (screen < 40){
+      if (screen < 40) {
         digitalWrite(mellomstegpower, HIGH);
         digitalWrite(mellomstegretning, HIGH);
       }
