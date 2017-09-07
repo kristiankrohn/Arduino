@@ -11,7 +11,7 @@ int man_koktemp;
 int man_koktempC = 67;
 int man_mesktemp;
 int man_mesktempC = 67;
-
+int StartSteg;
 bool Back, Down, Up, Enter;
 bool oldBack, oldDown, oldUp, oldEnter;
 int8_t menuPos = 0;
@@ -137,9 +137,14 @@ void writeSkjermbuffer() {
         }
         else if (screen == 5) {
           screen = 6;
+          StartSteg = Steg;
         }
         else if (screen == 6) {
           screen = 7;
+          
+          if (StartSteg != Steg){
+            setupSteg(StartSteg);
+          }
         }
         else if (screen == 30) {
           if (menuPos == 0) {
@@ -277,7 +282,13 @@ void writeSkjermbuffer() {
     case 6: {
         printString("Falskbunn og filter", 0);
         printString("montert?", 1);
+        String StegString = String(StartSteg);
+        printString(String("Starter i Steg: " + StegString), 2);
         printString("Klart til start?", 3);
+        StartSteg = changeVariable(StartSteg);
+        if (StartSteg > 13){
+          StartSteg = 13;
+        }
       }
       break;
 

@@ -24,12 +24,15 @@ void getSensordata() {
   */
 
   if (CAN_MSGAVAIL == CAN.checkReceive()) {
-    unsigned char len = 0;
-    CAN.readMsgBuf(&len, CANbuf);
-    analog_mesktemp = CANbuf[0];
-    analog_mesktemp |= CANbuf[1] << 8;
-    mellomstegTom = bool(CANbuf[2]);
-    mesketankTom = bool(CANbuf[3]);
+    if (CAN.getCanId() == 0){
+      unsigned char len = 0;
+      CAN.readMsgBuf(&len, CANbuf);
+      analog_mesktemp = CANbuf[0];
+      analog_mesktemp |= CANbuf[1] << 8;
+      mellomstegTom = bool(CANbuf[2]);
+      mesketankTom = bool(CANbuf[3]);
+      Serial.println(analog_mesktemp);
+    }
   }
 
 }

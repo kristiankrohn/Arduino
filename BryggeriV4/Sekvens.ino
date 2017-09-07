@@ -59,6 +59,202 @@ void print_time2() //Fjern etter testing
   //Serial.println(timer.getCurrentTime());
 }
 
+void setupSteg(int nxtSteg) {
+
+  TimerReset();
+  timer.pause();
+  timer.setCounter(0, 0, 0, timer.COUNT_DOWN, timerComplete);
+  if (nxtSteg == 0) {
+    Steg = 0;
+  }
+
+  else if (nxtSteg == 1) {
+    Steg = 1;
+  }
+
+  else if (nxtSteg == 2) {
+    Steg = 2;
+    Pumpe = true;
+  }
+
+  else if (nxtSteg == 3) {
+    Steg = 3;
+    Serial.print("Striketemp var: ");
+    Serial.println(striketemp);
+    Pumpe = true;
+    // Oppsett av timer for neste steg.
+    int striketid;
+    striketid = (int)(meskevolum * pumpekonstant);
+    int t0 = 0;
+    int i0 = 0;
+
+    if (striketid >= 60) {
+      t0 = striketid / 60;
+      i0 = striketid % 60;
+    }
+    else {
+      i0 = striketid;
+      t0 = 0;
+    }
+    init_reguleringsventil();
+    timer.setCounter(0, t0, i0, timer.COUNT_DOWN, timerComplete);
+    timer.start();
+    /*Serial.print(t0);
+      Serial.print(i0);
+      Serial.println(striketid); */
+    Serial.println("Steg 3");
+    startTid = millis();
+  }
+
+  else if (nxtSteg == 4) {
+    Steg = 4;
+    Serial.println("Steg 4");
+    Pumpe = false;
+    // Oppsett av timer for lufting
+    timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
+    timer.start();
+  }
+
+  else if (nxtSteg == 5) {
+    Steg = 5;
+    Serial.println("Steg 5");
+    Pumpe = true;
+    // Oppsett av timer for mesking
+    int t1 = 0, i1 = 0;
+    if (mesketid >= 60) {
+      t1 = mesketid / 60; //Timer
+      i1 = mesketid % 60; //Minutter
+    }
+    else {
+      i1 = mesketid;
+    }
+
+    init_reguleringsventil();
+    timer.setCounter(t1, i1, 0, timer.COUNT_DOWN, timerComplete);
+    timer.start();
+  }
+
+  else if (nxtSteg == 6) {
+    Steg = 6;
+    Serial.println("Steg 5");
+    Pumpe = true;
+    //Oppsett av timer for skylling.
+    int t2 = 0, i2 = 0;
+    int skylletid = 0;
+    skylletid = (int)(skyllevolum * pumpekonstant);
+
+    if (skylletid >= 60) {
+      t2 = (int)skylletid / 60;
+      i2 = (int)skylletid % 60;
+    }
+
+    else {
+      i2 = skylletid;
+    }
+
+    timer.setCounter(0, t2, i2, timer.COUNT_DOWN, timerComplete);
+    timer.start();
+    init_reguleringsventil();
+    init_mellomstegsventil();
+  }
+
+  else if (nxtSteg == 7) {
+    Steg = 7;
+    Serial.println("Steg 6"); //Pulse pumpe
+
+    //Oppsett av timer for avrenning.
+    int t3 = 0, i3 = 0;
+
+    if (avrenningstid >= 60) {
+      t3 = avrenningstid / 60;
+      i3 = avrenningstid % 60;
+    }
+
+    else {
+      i3 = avrenningstid;
+    }
+
+    timer.setCounter( t3, i3, 0, timer.COUNT_DOWN, timerComplete);
+    timer.start();
+    init_reguleringsventil();
+    init_pulsepumpe();
+  }
+
+  else if (nxtSteg == 8) {
+    if (mesketankTom == true) {
+      Steg = 9;
+      timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
+      timer.start();
+    }
+    else {
+      Steg = 8;
+    }
+    Serial.println("Steg 7");
+    init_mellomstegsventil();
+    //Oppsett timer lufting
+
+    Pumpe = false;
+  }
+
+  else if (nxtSteg == 9) {
+    Steg = 9;
+    init_mellomstegsventil();
+    timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
+    timer.start();
+  }
+
+  else if (nxtSteg == 10) {
+    Steg = 10;
+    Pumpe = true;
+  }
+
+  else if (nxtSteg == 11) {
+    if ((Now - delayTid) > 6000) {
+
+      int t4 = 0, i4 = 0;
+      if (koketid >= 60) {
+        t4 = koketid / 60; //Timer
+        i4 = koketid % 60; //Minutter
+      }
+      else {
+        i4 = koketid;
+      }
+      Pumpe = true;
+      timer.setCounter(t4, i4, 0, timer.COUNT_DOWN, timerComplete);
+      //Oppsett av timer for koking
+      Steg = 11;
+    }
+
+    else if (mellomstegTom == false) {
+      delayTid = millis();
+    }
+  }
+
+  else if (nxtSteg == 12) {
+    int t4 = 0, i4 = 0;
+    if (koketid >= 60) {
+      t4 = koketid / 60; //Timer
+      i4 = koketid % 60; //Minutter
+    }
+    else {
+      i4 = koketid;
+    }
+    timer.setCounter(t4, i4, 0, timer.COUNT_DOWN, timerComplete);
+    timer.start();
+    Steg = 12;
+    Serial.println("Steg 8");
+    Pumpe = true;
+  }
+
+  else if (nxtSteg == 13) {
+    Steg = 13;
+    Serial.println("Steg 9");
+    Pumpe = false;
+
+  }
+}
+
+
 
 void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS          SEKVENS          SEKVENS
   if (Steg == 0) {
@@ -69,6 +265,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       screen = 7;
       //striketemp = MeskSet + 40;
       Serial.println("Steg 1");
+      SendStartBrew();
     }
   }
 
@@ -83,7 +280,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
       Steg = 2;
       Pumpe = true;
-
+      SendSteg();
     }
   }
 
@@ -119,6 +316,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
         Serial.println(striketid); */
       Serial.println("Steg 3");
       startTid = millis();
+      SendSteg();
     }
   }
 
@@ -134,6 +332,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       // Oppsett av timer for lufting
       timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
       timer.start();
+      SendSteg();
     }
   }
   else if ((Steg == 4) && (Start == true)) {
@@ -143,6 +342,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       Serial.println("Steg 5");
       Pumpe = true;
       Steg = 5;
+      SendSteg();
       // Oppsett av timer for mesking
       int t1 = 0, i1 = 0;
       if (mesketid >= 60) {
@@ -169,6 +369,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
     if (meskFerdig) {
       Steg = 6;
+      SendSteg();
       Serial.println("Steg 5");
       Pumpe = true;
       //Oppsett av timer for skylling.
@@ -199,6 +400,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (menuNav == 6) {     // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
       //if (skyllFerdig) {
       Steg = 7;
+      SendSteg();
       Serial.println("Steg 6"); //Pulse pumpe
 
       //Oppsett av timer for avrenning.
@@ -229,11 +431,13 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if ((mesketankTom == true) || (avrenningFerdig == true)) {
       if (mesketankTom == true) {
         Steg = 9;
+        SendSteg();
         timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
         timer.start();
       }
       else {
         Steg = 8;
+        SendSteg();
       }
       Serial.println("Steg 7");
       init_mellomstegsventil();
@@ -249,6 +453,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
     if (mesketankTom == true) {
       Steg = 9;
+      SendSteg();
       init_mellomstegsventil();
       timer.setCounter(0, 0, 10, timer.COUNT_DOWN, timerComplete);
       timer.start();
@@ -260,6 +465,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     mellomstegsventil(5000);
     if (luftemellomsteg == true) {
       Steg = 10;
+      SendSteg();
       Pumpe = true;
     }
 
@@ -270,7 +476,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     getSensordata();
 
     if (mellomstegTom == true) {
-      if ((Now - delayTid) > 2000) {
+      if ((Now - delayTid) > 6000) {
 
         int t4 = 0, i4 = 0;
         if (koketid >= 60) {
@@ -284,9 +490,10 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
         timer.setCounter(t4, i4, 0, timer.COUNT_DOWN, timerComplete);
         //Oppsett av timer for koking
         Steg = 11;
+        SendSteg();
       }
     }
-    else {
+    else if (mellomstegTom == false) {
       delayTid = millis();
     }
 
@@ -297,6 +504,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (Input >= kokepunkt) { //koketanktemp == Input
       timer.start();
       Steg = 12;
+      SendSteg();
       Serial.println("Steg 8");
       Pumpe = true;
     }
@@ -307,6 +515,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
     if (kokFerdig == true) {
       Steg = 13;
+      SendSteg();
       Serial.println("Steg 9");
       Pumpe = false;
 
@@ -318,6 +527,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
     if (Input < pitchtemp) { //Input == koketanktemp
       Steg = 0;
+      SendSteg();
       Serial.println("Ferdig!");
       TimerReset();
       Start = false;

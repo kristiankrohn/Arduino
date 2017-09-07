@@ -1,8 +1,9 @@
 unsigned long varmeStartTime;
 int varmePin = 36;
-
+int floatSwitch = 28;
 void TempInit(){
   pinMode(varmePin, OUTPUT);  // Varmelement
+  pinMode(floatSwitch, INPUT_PULLUP);
   digitalWrite(varmePin, HIGH);
   varmeStartTime = 0;
   MeskSet=celciusToAnalog(67);
@@ -64,7 +65,7 @@ void init_varmereg() {
 }
 
 void varmeReg() {
-  if (Steg != 0) {
+  if ((Steg != 0)&&(digitalRead(floatSwitch) == false)) {
     if ((Now - varmeStartTime) > 10000) { //time to shift the Relay Window
       if (Setpoint >= Input) {
         digitalWrite(varmePin, LOW); // Aktiv lav
@@ -83,7 +84,7 @@ void varmeReg() {
 void getAnalogdata() {
   //analog_mesktemp = analogRead(0); moved this sensor to sensornode
 
-  //Wire.requestFrom(9, 2);
+  //Wire.requestFrom(9, 2); //For I2C communication with sensornode
   //analog_mesktemp = Wire.read();
   //analog_mesktemp |= (Wire.read() << 8);
   analog_koktopptemp = analogRead(1);

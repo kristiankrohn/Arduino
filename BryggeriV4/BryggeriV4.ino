@@ -37,7 +37,7 @@ int kokepunkt = 990; // HUSK Å KALIBRERE DENNE
 int mesketid = 60;
 int koketid = 60;
 int avrenningstid = 15; //Minutter
-const float pumpekonstant = 11; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
+const float pumpekonstant = 10.5; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
 const int flowmeterkonstant = 140.5;
 int MeskSet;
 int mellomstegaapning;
@@ -111,11 +111,13 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   Setpoint = Setpunkt();
   sekvens();
   varmeReg();
+  getSensordata();
   if (Now - windowStartTime > 500) {
     solenoid();
     pumpe();
     lokk();
     windowStartTime += 500;
     //Serial.println(getPumpCurrent());
+    SendTimeandTemp();
   }
 }

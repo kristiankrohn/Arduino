@@ -40,7 +40,7 @@ void loop() {
   mesketemp = analogRead(1);
   mellomstegTom = digitalRead(mellomsteg);
   mesketankTom = digitalRead(mesketank);
-  //Serial.println(mesketemp);
+  Serial.println(mesketemp);
   
   //Serial.print("Mellomsteg :");
   //Serial.println(mellomstegTom);
