@@ -64,6 +64,7 @@ void setupSteg(int nxtSteg) {
   TimerReset();
   timer.pause();
   timer.setCounter(0, 0, 0, timer.COUNT_DOWN, timerComplete);
+  SendStartBrew();
   if (nxtSteg == 0) {
     Steg = 0;
   }
@@ -252,6 +253,7 @@ void setupSteg(int nxtSteg) {
     Pumpe = false;
 
   }
+  SendSteg();
 }
 
 
@@ -426,7 +428,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     // tapping fra mesketank
     lukkeRegvent();
     pulsepumpe();
-    getSensordata();
+    //getSensordata();
     lukkemellomstegsventil();
     if ((mesketankTom == true) || (avrenningFerdig == true)) {
       if (mesketankTom == true) {
@@ -448,7 +450,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   }
   //8. Renne resten ned i mellomsteg
   else if ((Steg == 8) && (Start == true)) {
-    getSensordata();
+    //getSensordata();
     mellomstegsventil(mellomstegaapning);
 
     if (mesketankTom == true) {
@@ -473,7 +475,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   //10. pumpe opp fra mellomsteg
   else if ((Steg == 10) && (Start == true)) {
 
-    getSensordata();
+    //getSensordata();
 
     if (mellomstegTom == true) {
       if ((Now - delayTid) > 6000) {

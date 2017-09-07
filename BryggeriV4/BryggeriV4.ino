@@ -97,9 +97,14 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   OPCinit(); 
   TimerInit();
   CanBusInit();
+
+  pinMode(26, INPUT_PULLUP);
 }
 
 void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN
+  if(digitalRead(26) == 0){
+    delay(100000);
+  }
   runOPC();
   //noInterrupts();
   timer.run();
@@ -111,7 +116,8 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   Setpoint = Setpunkt();
   sekvens();
   varmeReg();
-  getSensordata();
+  getCANmessage();
+  
   if (Now - windowStartTime > 500) {
     solenoid();
     pumpe();

@@ -560,7 +560,7 @@ void lcdInit() {
   printString("    Laget av:", 1);
   printString("Krohn & Hoel Eng.", 2);
   printBuffer(skjermbuffer);
-  delay(1000);
+  delay(500);
   screenStartTime = millis();
 }
 
