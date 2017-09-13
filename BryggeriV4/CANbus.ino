@@ -12,22 +12,28 @@ void CanBusInit() {
     delay(100);
   }
   Serial.println("CAN BUS Shield init ok!");
+  attachInterrupt(digitalPinToInterrupt(18), MCP2515_ISR, FALLING); // start interrupt
+}
+void MCP2515_ISR()
+{
+  flagRecv = 1;
+  //getCANmessage();
+  //Serial.println("Interrupt");
 }
 
-
-
 void getCANmessage() {
-  if (CAN_MSGAVAIL == CAN.checkReceive()) {
+  //Serial.println("Starting reading message");
+  while (CAN_MSGAVAIL == CAN.checkReceive()) {
     unsigned char len = 0;
     CAN.readMsgBuf(&len, CANbuf);
 
     if (CAN.getCanId() == 0) {
-      
+
       analog_mesktemp = CANbuf[0];
       analog_mesktemp |= CANbuf[1] << 8;
       mellomstegTom = bool(CANbuf[2]);
       mesketankTom = bool(CANbuf[3]);
-      Serial.println(analog_mesktemp);
+      //Serial.println(analog_mesktemp);
     }
     else if (CAN.getCanId() == 0x20) {
       Serial.println("First resetmessage received");
@@ -37,28 +43,68 @@ void getCANmessage() {
       koketid = CANbuf[3];
       MeskSet = CANbuf[4];
       Steg = CANbuf[5];
+      MeskSet |= CANbuf[6] << 8;
+      for (int i = 0; i < 8; i++) {
+        Serial.println(CANbuf[i]);
+      }
     }
     else if (CAN.getCanId() == 0x21) {
       Serial.println("Second resetmessage received, and ready to start");
+      for (int i = 0; i < 8; i++) {
+        Serial.println(CANbuf[i]);
+      }
+      tick = CANbuf[4];
+      tick |= CANbuf[5] << 8;
+      tick |= CANbuf[6] << 16;
+      tick |= CANbuf[7] << 32;
+
       timer.setCounter(CANbuf[0], CANbuf[1], CANbuf[2], timer.COUNT_DOWN, timerComplete);
       timer.start();
-      Start = true;
-      screen = 7;
-      //if (Steg == (2||3||5||6||10||11||12)){
-        //Pumpe = true;
-      //}
+      Start = bool(CANbuf[3]);
+      Serial.print("Start: ");
+      Serial.println(CANbuf[3]);
+      if (Start == true) {
+        screen = 7;
+        if ((Steg == 2) || (Steg == 3) || (Steg == 5) || (Steg == 6) || (Steg == 10) || (Steg == 11) || (Steg == 12)) {
+          Pumpe = true;
+        }
+      }
+    }
+    else{
+      for (int i = 0; i < 8; i++) {
+        Serial.println(CANbuf[i], HEX);
+      }
     }
   }
+  //Serial.println("Finishd reading message");
 }
 
 void SendStartBrew() {
-  unsigned char stmp[8] = {meskevolum, skyllevolum, mesketid, koketid, MeskSet, 0, 0, 0};
+  Serial.print(Start);
+  Serial.println("Sendig Start Brew");
+  int temp = MeskSet;
+  int MeskSetHB = temp >>8;
+  unsigned char stmp[8] = {meskevolum, skyllevolum, mesketid, koketid, MeskSet, (int)Start, Steg, MeskSetHB};
+  CAN.sendMsgBuf(0x10, 0, 8, stmp);
+  for (int i = 0; i < 8; i++) {
+    Serial.println(stmp[i]);
+  }
+}
+
+void SendStartSystem(){
+  int temp = MeskSet;
+  int MeskSetHB = temp >>8;
+  unsigned char stmp[8] = {meskevolum, skyllevolum, mesketid, koketid, MeskSet, (int)Start, Steg, MeskSetHB};
   CAN.sendMsgBuf(0x10, 0, 8, stmp);
 }
 
 void SendSteg() {
+  Serial.println("Sending Steg");
   unsigned char stmp[8] = {Steg, 0, 0, 0, 0, 0, 0, 0};
   CAN.sendMsgBuf(0x11, 0, 8, stmp);
+  for (int i = 0; i < 8; i++) {
+    Serial.println(stmp[i]);
+  }
 }
 
 void SendTick() {
@@ -72,6 +118,8 @@ void SendTick() {
 }
 
 void SendTimeandTemp() {
+
+  //Serial.println("Sending time and temp");
   uint8_t koktoppLb = analog_koktopptemp;
   uint8_t koktoppHb = analog_koktopptemp >> 8;
 
@@ -80,5 +128,6 @@ void SendTimeandTemp() {
 
   unsigned char stmp[8] = {timer.getCurrentHours(), timer.getCurrentMinutes(), timer.getCurrentSeconds(), 0, koktoppLb, koktoppHb, kokbunnLb, kokbunnHb};
   CAN.sendMsgBuf(0x01, 0, 8, stmp);
+
 }
 

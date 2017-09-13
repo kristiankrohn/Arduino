@@ -141,8 +141,8 @@ void writeSkjermbuffer() {
         }
         else if (screen == 6) {
           screen = 7;
-          
-          if (StartSteg != Steg){
+
+          if (StartSteg != Steg) {
             setupSteg(StartSteg);
           }
         }
@@ -189,14 +189,14 @@ void writeSkjermbuffer() {
           screen = 45;
           EEPROMWriteInt(mellomstegaapningAddr, mellomstegaapning);
           init_mellomstegsventil();
-          
+
         }
-        else if ((screen == 43)||(screen == 45)){
+        else if ((screen == 43) || (screen == 45)) {
           screen = 40;
         }
 
         menuPos = 0;
-        
+
       }
       break;
     case 4: {
@@ -286,7 +286,7 @@ void writeSkjermbuffer() {
         printString(String("Starter i Steg: " + StegString), 2);
         printString("Klart til start?", 3);
         StartSteg = changeVariable(StartSteg);
-        if (StartSteg > 13){
+        if (StartSteg > 13) {
           StartSteg = 13;
         }
       }
@@ -323,6 +323,8 @@ void writeSkjermbuffer() {
         }
         else if ((Steg <= 10) && (Steg >= 7)) {
           stringSteg = "Avrenning";
+          String TimerTimer = String(timer.getCurrentTime());
+          printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 11) {
           stringSteg = "Oppkok";
@@ -555,12 +557,12 @@ void lcdInit() {
   lcd.backlight();
   lcd.setCursor(0, 0);
   skjermbufferInit();
-  delay(100);
-  printString("   Breidabrygg", 0);
-  printString("    Laget av:", 1);
-  printString("Krohn & Hoel Eng.", 2);
-  printBuffer(skjermbuffer);
-  delay(500);
+  //delay(100);
+  //printString("   Breidabrygg", 0);
+  //printString("    Laget av:", 1);
+  //printString("Krohn & Hoel Eng.", 2);
+  //printBuffer(skjermbuffer);
+  //delay(500);
   screenStartTime = millis();
 }
 

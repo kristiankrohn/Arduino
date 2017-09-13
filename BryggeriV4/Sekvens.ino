@@ -64,7 +64,8 @@ void setupSteg(int nxtSteg) {
   TimerReset();
   timer.pause();
   timer.setCounter(0, 0, 0, timer.COUNT_DOWN, timerComplete);
-  SendStartBrew();
+  Start = true;
+  
   if (nxtSteg == 0) {
     Steg = 0;
   }
@@ -253,7 +254,8 @@ void setupSteg(int nxtSteg) {
     Pumpe = false;
 
   }
-  SendSteg();
+  //SendSteg();
+  SendStartBrew();
 }
 
 
@@ -372,7 +374,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     if (meskFerdig) {
       Steg = 6;
       SendSteg();
-      Serial.println("Steg 5");
+      Serial.println("Steg 6");
       Pumpe = true;
       //Oppsett av timer for skylling.
       int t2 = 0, i2 = 0;

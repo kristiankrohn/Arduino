@@ -50,6 +50,8 @@ int analog_mesktemp;
 int analog_koktopptemp;
 int analog_kokbunntemp;
 
+unsigned char flagRecv = 0;
+
 //This function will write a 2 byte integer to the eeprom at the specified address and address + 1
 void EEPROMWriteInt(int p_address, int p_value)
      {
@@ -97,7 +99,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   OPCinit(); 
   TimerInit();
   CanBusInit();
-
+  //MeskSet = celciusToAnalog(67);
   pinMode(26, INPUT_PULLUP);
 }
 
@@ -105,6 +107,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   if(digitalRead(26) == 0){
     delay(100000);
   }
+  //Serial.println(MeskSet);
   runOPC();
   //noInterrupts();
   timer.run();
@@ -116,14 +119,20 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   Setpoint = Setpunkt();
   sekvens();
   varmeReg();
-  getCANmessage();
-  
+  if(flagRecv){
+    flagRecv = 0;
+    getCANmessage();
+  }
   if (Now - windowStartTime > 500) {
+    //Serial.println("Timer");
     solenoid();
     pumpe();
     lokk();
     windowStartTime += 500;
     //Serial.println(getPumpCurrent());
     SendTimeandTemp();
+    if(Steg == 1){
+      SendTick();
+    }
   }
 }
