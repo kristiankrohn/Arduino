@@ -29,7 +29,7 @@ int Setpunkt() {
   meskset = MeskSet + 20;
   striketemp = MeskSet + 20;
 
-  if ((Steg == 1) && (koketankvolum > 35)) {
+  if (Steg == 1) {
     Setpunkt = striketemp;
   }
 
@@ -41,7 +41,7 @@ int Setpunkt() {
     Setpunkt = meskset;
   }
 
-  else if ((Steg == 11) || (Steg == 12)) {
+  else if ((Steg == 10) || (Steg == 11) || (Steg == 12)) {
     Setpunkt = k;
   }
 

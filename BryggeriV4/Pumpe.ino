@@ -55,6 +55,7 @@ void pumpe() {
 }
 
 int getPumpCurrent() {
-  int c = analogRead(0);
-  return c;
+  int RawValue = analogRead(0);
+  float Current = (RawValue * 5.0 )/ 1.024;
+  return int(Current);
 }

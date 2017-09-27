@@ -1,13 +1,12 @@
-int s0 = 31;
-int s1 = 39;  //Pinout solenoidventiler
-int s2 = 40;
-int s3 = 41;
-int s4 = 42;
-int s5 = 43;
-int s6 = 44;
-int s7 = 45;
-int s8 = 46;
-int s9 = 47;
+int v1 = 31;
+int v3 = 39;  //Pinout solenoidventiler
+int v4 = 40;
+int v5 = 41;
+int v6 = 42;
+int v7 = 43;
+int v8 = 44;
+int v9 = 45;
+int v10 = 47;
 int mellomsteg_knapp = 32;
 int mellomstegpower = 30;
 int mellomstegretning = 29;
@@ -22,26 +21,24 @@ void VentilInit() {
   pinMode(mellomstegretning, OUTPUT);
   pinMode(regventpower, OUTPUT);
   pinMode(regventretning, OUTPUT);
-  pinMode(s0, OUTPUT);
-  pinMode(s1, OUTPUT); // Solenoid Ventiler
-  pinMode(s2, OUTPUT);
-  pinMode(s3, OUTPUT);
-  pinMode(s4, OUTPUT);
-  pinMode(s5, OUTPUT);
-  pinMode(s6, OUTPUT);
-  pinMode(s7, OUTPUT);
-  pinMode(s8, OUTPUT);
-  pinMode(s9, OUTPUT);
-  digitalWrite(s0, HIGH);
-  digitalWrite(s1, HIGH);   //AKTIV LAV
-  digitalWrite(s2, HIGH);
-  digitalWrite(s3, HIGH);
-  digitalWrite(s4, HIGH);
-  digitalWrite(s5, HIGH);
-  digitalWrite(s6, HIGH);
-  digitalWrite(s7, HIGH);
-  digitalWrite(s8, HIGH);
-  digitalWrite(s9, HIGH);
+  pinMode(v1, OUTPUT);
+  pinMode(v3, OUTPUT); // Solenoid Ventiler
+  pinMode(v4, OUTPUT);
+  pinMode(v5, OUTPUT);
+  pinMode(v6, OUTPUT);
+  pinMode(v7, OUTPUT);
+  pinMode(v8, OUTPUT);
+  pinMode(v9, OUTPUT);
+  pinMode(v10, OUTPUT);
+  digitalWrite(v1, HIGH);
+  digitalWrite(v3, HIGH);   //AKTIV LAV
+  digitalWrite(v4, HIGH);
+  digitalWrite(v5, HIGH);
+  digitalWrite(v6, HIGH);
+  digitalWrite(v7, HIGH);
+  digitalWrite(v8, HIGH);
+  digitalWrite(v9, HIGH);
+  digitalWrite(v10, HIGH);
   digitalWrite(regventpower, HIGH);
   digitalWrite(regventretning, HIGH);
   digitalWrite(mellomstegpower, HIGH);
@@ -155,16 +152,15 @@ void solenoid() {
   bool c;
   c = digitalRead(5);
   if (!c) { // Manuell ventilkjøring
-    digitalWrite(s0, HIGH);
-    digitalWrite(s1, HIGH);   //AKTIV LAV
-    digitalWrite(s2, HIGH);
-    digitalWrite(s3, HIGH);
-    digitalWrite(s4, HIGH);
-    digitalWrite(s5, HIGH);
-    digitalWrite(s6, HIGH);
-    digitalWrite(s7, HIGH);
-    digitalWrite(s8, HIGH);
-    digitalWrite(s9, HIGH);
+    digitalWrite(v1, HIGH);
+    digitalWrite(v3, HIGH);   //AKTIV LAV
+    digitalWrite(v4, HIGH);
+    digitalWrite(v5, HIGH);
+    digitalWrite(v6, HIGH);
+    digitalWrite(v7, HIGH);
+    digitalWrite(v8, HIGH);
+    digitalWrite(v9, HIGH);
+    digitalWrite(v10, HIGH);
     if (screen < 40) {
       digitalWrite(mellomstegpower, LOW);
 
@@ -178,200 +174,186 @@ void solenoid() {
   }
   else {
     if (Steg == 1) { // FYLLE VANN I KOKETANK
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, HIGH);
-      digitalWrite(s5, LOW);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, LOW);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, HIGH);
+      digitalWrite(v7, LOW);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, LOW);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 2) { // VARME VANN TIL STRIKETEMP
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, LOW);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, LOW);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, LOW);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, LOW);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 3) { // STRIKE
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, LOW);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, LOW);
-      digitalWrite(s7, HIGH);
-      digitalWrite(s8, LOW);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, LOW);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, LOW);
+      digitalWrite(v9, HIGH);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, HIGH);
     }
     else if (Steg == 4) { // LUFTING
-      digitalWrite(s0, LOW);
-      digitalWrite(s1, LOW);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, LOW);
-      digitalWrite(s4, HIGH);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, HIGH);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, LOW);
+      digitalWrite(v3, LOW);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, LOW);
+      digitalWrite(v6, HIGH);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, HIGH);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, HIGH);
     }
     else if (Steg == 5) { // MESK
-      digitalWrite(s0, LOW);
-      digitalWrite(s1, LOW);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, LOW);
-      digitalWrite(s7, HIGH);
-      digitalWrite(s8, LOW);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, LOW);
+      digitalWrite(v3, LOW);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, LOW);
+      digitalWrite(v9, HIGH);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 6) { //SKYLLING - renning ned i mellomsteg
-      digitalWrite(s0, LOW);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, LOW);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, LOW);
-      digitalWrite(s7, HIGH);
-      digitalWrite(s8, LOW);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, LOW);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, LOW);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, LOW);
+      digitalWrite(v9, HIGH);
+      digitalWrite(v10, HIGH);
     }
 
     else if (Steg == 7) { //AVRENNING - pulsepumpe
-      digitalWrite(s0, LOW);
-      digitalWrite(s1, LOW);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, LOW);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, LOW);
+      digitalWrite(v3, LOW);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, LOW);
+      digitalWrite(v10, HIGH);
     }
 
     else if (Steg == 8) { // Renne ned i mellomsteg
-      digitalWrite(s0, LOW);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, HIGH);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, HIGH);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, LOW);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, HIGH);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, HIGH);
+      digitalWrite(v10, HIGH);
     }
     else if (Steg == 9) { // Lufte mellomsteg
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, LOW);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, LOW);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, LOW);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, LOW);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, LOW);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, LOW);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, LOW);
     }
     else if (Steg == 10) {  // Pumpe opp fra mellomsteg til koketank
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, LOW);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, LOW);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, LOW);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, LOW);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, LOW);
     }
     else if (Steg == 11) { //OPPKOK
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, LOW);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, LOW);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, LOW);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, LOW);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 12) { //KOKING
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, LOW);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, LOW);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, LOW);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, LOW);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, LOW);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, LOW);
+      digitalWrite(v10, HIGH);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, HIGH);
     }
 
     else if (Steg == 13) { //NEDKJØLING
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, HIGH);
-      digitalWrite(s5, LOW);
-      digitalWrite(s6, LOW);
-      digitalWrite(s7, HIGH);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, LOW);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, HIGH);
+      digitalWrite(v7, LOW);
+      digitalWrite(v8, LOW);
+      digitalWrite(v9, HIGH);
+      digitalWrite(v10, LOW);
       digitalWrite(mellomstegpower, LOW);
       digitalWrite(mellomstegretning, HIGH);
     }
 
     else {
-      digitalWrite(s0, HIGH);
-      digitalWrite(s1, HIGH);   //AKTIV LAV
-      digitalWrite(s2, HIGH);
-      digitalWrite(s3, HIGH);
-      digitalWrite(s4, HIGH);
-      digitalWrite(s5, HIGH);
-      digitalWrite(s6, HIGH);
-      digitalWrite(s7, HIGH);
-      digitalWrite(s8, HIGH);
-      digitalWrite(s9, HIGH);
+      digitalWrite(v1, HIGH);
+      digitalWrite(v3, HIGH);   //AKTIV LAV
+      digitalWrite(v4, HIGH);
+      digitalWrite(v5, HIGH);
+      digitalWrite(v6, HIGH);
+      digitalWrite(v7, HIGH);
+      digitalWrite(v8, HIGH);
+      digitalWrite(v9, HIGH);
+      digitalWrite(v10, HIGH);
       if (screen < 40) {
         digitalWrite(mellomstegpower, HIGH);
         digitalWrite(mellomstegretning, HIGH);

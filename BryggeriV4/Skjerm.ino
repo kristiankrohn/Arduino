@@ -180,6 +180,9 @@ void writeSkjermbuffer() {
             screen = 44;
           }
         }
+        else if (screen == 41){
+          EEPROMWriteInt(pumpeTerskelAddr, pumpeTerskel);
+        }
         else if (screen == 42) { //Regvent
           screen = 43;
           EEPROMWriteInt(reguleringaapningAddr, reguleringaapning);
@@ -413,8 +416,12 @@ void writeSkjermbuffer() {
       }
       break;
     case 41: {
-        String analog0 = String(analog_mesktemp);
-        printString(String("Analog 0 = " + analog0), 1);
+        
+        String analog0 = String(getPumpCurrent());
+        printString(String("Analog 0(mA) = " + analog0), 1);
+        pumpeTerskel = changeVariableTens(pumpeTerskel);
+        String pmpTerskel = String(pumpeTerskel);
+        printString(String("Pumpeterskel = " + pmpTerskel), 2);
       }
       break;
     case 42: {

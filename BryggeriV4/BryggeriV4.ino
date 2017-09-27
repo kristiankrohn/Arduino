@@ -49,7 +49,8 @@ bool Pumpe;
 int analog_mesktemp;
 int analog_koktopptemp;
 int analog_kokbunntemp;
-
+int pumpeTerskel;
+int pumpeTerskelAddr = 6;
 unsigned char flagRecv = 0;
 
 //This function will write a 2 byte integer to the eeprom at the specified address and address + 1
@@ -75,6 +76,7 @@ int EEPROMReadInt(int p_address)
 void VariablesInit(){
   mellomstegaapning = EEPROMReadInt(mellomstegaapningAddr);
   reguleringaapning = EEPROMReadInt(reguleringaapningAddr);
+  pumpeTerskel = EEPROMReadInt(pumpeTerskelAddr);
   Serial.print("Mellomsteg loaded: ");
   Serial.println(mellomstegaapning);
   Serial.print("Regvent loaded: ");
