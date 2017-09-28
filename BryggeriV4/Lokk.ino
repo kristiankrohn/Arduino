@@ -1,10 +1,12 @@
 byte lokkButton; //Trykknapp for lokket
 byte lokkOldbutton = 1;
-byte lokkButtonpin = 37; //pin 1
-int lokkPin = 38;
+byte lokkButtonpin = 28;
+int lokkPower = 29; 
+int lokkPin = 30;
 
 void LokkInit(){
   pinMode(lokkPin, OUTPUT);
+  pinMode(lokkPower, OUTPUT);
   pinMode(lokkButtonpin, INPUT_PULLUP);
   Lokk = EEPROM.read(0);
   if (Lokk) {
@@ -13,6 +15,7 @@ void LokkInit(){
   else{
     digitalWrite(lokkPin, HIGH);
   }
+  digitalWrite(lokkPower, LOW);
 }
 
 void lokk() {

@@ -1,7 +1,8 @@
 byte button; //Trykknapp for pumpa
 byte oldbutton = 1;
 byte buttonpin = 3;
-int pumpePin = 35;
+int pumpePin = 31;
+int currentPin = 2;
 unsigned long pumpeStartTime;
 
 
@@ -55,7 +56,7 @@ void pumpe() {
 }
 
 int getPumpCurrent() {
-  int RawValue = analogRead(0);
+  int RawValue = analogRead(currentPin);
   float Current = (RawValue * 5.0 )/ 1.024;
   return int(Current);
 }

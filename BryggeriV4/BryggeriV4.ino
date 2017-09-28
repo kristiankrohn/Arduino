@@ -127,7 +127,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   }
   if (Now - windowStartTime > 500) {
     //Serial.println("Timer");
-    solenoid();
+    ventil();
     pumpe();
     lokk();
     windowStartTime += 500;

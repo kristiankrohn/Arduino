@@ -1,17 +1,17 @@
-int v1 = 31;
-int v3 = 39;  //Pinout solenoidventiler
-int v4 = 40;
-int v5 = 41;
-int v6 = 42;
-int v7 = 43;
-int v8 = 44;
-int v9 = 45;
+int v1 = 37;
+int v3 = 40; 
+int v4 = 41;
+int v5 = 42;
+int v6 = 43;
+int v7 = 44;
+int v8 = 45;
+int v9 = 46;
 int v10 = 47;
-int mellomsteg_knapp = 32;
-int mellomstegpower = 30;
-int mellomstegretning = 29;
-int regventpower = 33;
-int regventretning = 34;
+int mellomsteg_knapp = 27;
+int mellomstegpower = 39;
+int mellomstegretning = 38;
+int regventpower = 35;
+int regventretning = 36;
 int automan_knapp = 5;
 unsigned long pulseventilStartTime;
 unsigned long ventilStartTime;
@@ -148,9 +148,9 @@ void lukkemellomstegsventil() {
   digitalWrite(mellomstegretning, HIGH);
 }
 
-void solenoid() {
+void ventil() {
   bool c;
-  c = digitalRead(5);
+  c = digitalRead(automan_knapp);
   if (!c) { // Manuell ventilkjøring
     digitalWrite(v1, HIGH);
     digitalWrite(v3, HIGH);   //AKTIV LAV

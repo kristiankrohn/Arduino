@@ -1,6 +1,8 @@
 unsigned long varmeStartTime;
-int varmePin = 36;
-int floatSwitch = 28;
+int varmePin = 32;
+int floatSwitch = 25;
+int koktoppPin = 3;
+int kokbunnPin = 4;
 void TempInit(){
   pinMode(varmePin, OUTPUT);  // Varmelement
   pinMode(floatSwitch, INPUT_PULLUP);
@@ -87,8 +89,8 @@ void getAnalogdata() {
   //Wire.requestFrom(9, 2); //For I2C communication with sensornode
   //analog_mesktemp = Wire.read();
   //analog_mesktemp |= (Wire.read() << 8);
-  analog_koktopptemp = analogRead(1);
-  analog_kokbunntemp = analogRead(2);
+  analog_koktopptemp = analogRead(koktoppPin);
+  analog_kokbunntemp = analogRead(kokbunnPin);
 
   if (CAN_MSGAVAIL == CAN.checkReceive()) {
     unsigned char len = 0;

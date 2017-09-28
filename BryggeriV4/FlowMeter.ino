@@ -1,4 +1,4 @@
-const byte flowMeter = 2; // Må være enten pin 2, 3, 18, 19, 20, 21
+const byte flowMeter = 19; // Må være enten pin 2, 3, 18, 19, 20, 21
 
 void FlowMeterInit(){
   pinMode(flowMeter, INPUT_PULLUP);
