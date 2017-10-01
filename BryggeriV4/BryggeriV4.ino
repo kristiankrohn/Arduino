@@ -101,6 +101,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   OPCinit(); 
   TimerInit();
   CanBusInit();
+  init_ventilasjon();
   //MeskSet = celciusToAnalog(67);
 
 }
@@ -126,6 +127,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
   if (Now - windowStartTime > 500) {
     //Serial.println("Timer");
     ventil();
+    ventilasjon();
     pumpe();
     lokk();
     windowStartTime += 500;
