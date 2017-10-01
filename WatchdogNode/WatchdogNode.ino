@@ -5,6 +5,7 @@
 const int resetpin = 7;
 int fbTick, sbTick, tbTick, fobTick;
 long now;
+long lastblink;
 volatile long recievedmessage;
 int hours = 1;
 int minutes = 0;
@@ -26,7 +27,7 @@ int onOffSwitch = 3;
 int testRecovery = 4;
 int activeIndicator = 5;
 int resetIndicator = 6;
-
+bool led = false;
 byte button; //Trykknapp for pumpa
 byte oldbutton = 1;
 
@@ -130,8 +131,23 @@ void MCP2515_ISR()
 }
 
 void resetindication() {
-  if (resetcount >= 1) {
+  if (resetcount == 1) {
     digitalWrite(resetIndicator, HIGH);
+    led = true;
+  }
+  else if (resetcount  > 1) {
+    if ((now - lastblink) > (1000 / resetcount)) {
+      lastblink = now;
+      if (led == false) {
+        digitalWrite(resetIndicator, HIGH);
+        led = true;
+      }
+
+      else {
+        digitalWrite(resetIndicator, LOW);
+        led = false;
+      }
+    }
   }
   else {
     digitalWrite(resetIndicator, LOW);
@@ -143,6 +159,7 @@ void activeindication() {
   }
   else {
     digitalWrite(activeIndicator, LOW);
+    led = false;
   }
 
 }
@@ -169,7 +186,7 @@ void setup() {
   pinMode(activeIndicator, OUTPUT);
   Serial.begin(9600);
   Serial.println("Start init watchdognode");
-
+  digitalWrite(activeIndicator, LOW);
   pinMode(13, OUTPUT);
 
   CanBusInit();
@@ -177,6 +194,7 @@ void setup() {
   Serial.println("watchdognode init finished");
   delay(15000);
   now = millis();
+  lastblink = now;
 
 }
 
