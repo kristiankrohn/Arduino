@@ -339,6 +339,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       SendSteg();
     }
   }
+
+  
   else if ((Steg == 4) && (Start == true)) {
 
 
