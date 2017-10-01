@@ -102,13 +102,11 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   TimerInit();
   CanBusInit();
   //MeskSet = celciusToAnalog(67);
-  pinMode(26, INPUT_PULLUP);
+
 }
 
 void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN
-  if(digitalRead(26) == 0){
-    delay(100000);
-  }
+
   //Serial.println(MeskSet);
   runOPC();
   //noInterrupts();

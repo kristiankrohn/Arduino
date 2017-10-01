@@ -20,8 +20,13 @@ int Start = 0;
 const int SPI_CS_PIN = 9;
 MCP_CAN CAN(SPI_CS_PIN);
 unsigned char CANbuf[8];
-
 unsigned char flagRecv = 0;
+
+int onOffSwitch = 4;
+int testRecovery = 5;
+
+byte button; //Trykknapp for pumpa
+byte oldbutton = 1;
 
 void CanBusInit() {
   while (CAN_OK != CAN.begin(CAN_1000KBPS))              // init can bus : baudrate = 500k
@@ -122,9 +127,11 @@ void MCP2515_ISR()
 }
 
 void setup() {
-  // put your setup code here, to run once:
+
   digitalWrite(resetpin, HIGH);
   pinMode(resetpin, OUTPUT);
+  pinMode(onOffSwitch, INPUT_PULLUP);
+  pinMode(testRecovery, INPUT_PULLUP);
   Serial.begin(9600);
   Serial.println("Start init watchdognode");
 
@@ -139,18 +146,25 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  //if(flagRecv){
-  //flagRecv = 0;
-  //GetMessage();
-  //}
 
   now = millis();
   if ((now - recievedmessage) > 5000) {
-    Serial.println(now);
-    Serial.println(recievedmessage);
-    restart();
+    //Serial.println(now);
+    //Serial.println(recievedmessage);
+    if (digitalRead(onOffSwitch) == 0){
+      restart();
+    }
     recievedmessage = millis();
+  }
+
+  button = digitalRead(testRecovery);
+  if (button && !oldbutton) {
+    restart();
+    oldbutton = 1;
+  }
+  else if (!button && oldbutton)
+  {
+    oldbutton = 0;
   }
 }
 
