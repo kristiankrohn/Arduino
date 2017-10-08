@@ -1,8 +1,8 @@
 unsigned long varmeStartTime;
 int varmePin = 32;
 int floatSwitch = 25;
-int koktoppPin = 3;
-int kokbunnPin = 4;
+int koktoppPin = 2;
+int kokbunnPin = 3;
 void TempInit(){
   pinMode(varmePin, OUTPUT);  // Varmelement
   pinMode(floatSwitch, INPUT_PULLUP);

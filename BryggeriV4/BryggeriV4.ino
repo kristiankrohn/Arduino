@@ -15,7 +15,7 @@ double Setpoint, Input, Output;
 
 unsigned long Now;
 unsigned long windowStartTime;
-
+unsigned long longwindowStartTime;
 volatile unsigned long tick = 0; // Flowmeter tics
 volatile unsigned long man_tick = 0;
 bool mankok = false;
@@ -98,6 +98,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   FlowMeterInit();
   lcdInit();
   windowStartTime = millis();
+  longwindowStartTime = windowStartTime;
   OPCinit(); 
   TimerInit();
   CanBusInit();
@@ -136,5 +137,12 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
     if(Steg == 1){
       SendTick();
     }
+  }
+  if (Now - longwindowStartTime > 1200){
+    SendTimeandTemp();
+    if(Steg == 1){
+      SendTick();
+    }
+    longwindowStartTime += 1200;    
   }
 }

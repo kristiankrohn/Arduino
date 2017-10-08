@@ -100,7 +100,7 @@ void restart() {
   resetcount++;
   cli();
   digitalWrite(resetpin, LOW);
-  delay(200);
+  delay(1000);
   digitalWrite(resetpin, HIGH);
   //delay(5000);
   while ((CAN_MSGAVAIL != CAN.checkReceive()) && (CAN.getCanId() != 0));

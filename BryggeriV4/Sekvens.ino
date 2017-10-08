@@ -380,8 +380,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       Pumpe = true;
       //Oppsett av timer for skylling.
       int t2 = 0, i2 = 0;
-      int skylletid = 0;
-      skylletid = (int)(skyllevolum * pumpekonstant);
+      int skylletid = 10;
+      //skylletid = (int)(skyllevolum * pumpekonstant);
 
       if (skylletid >= 60) {
         t2 = (int)skylletid / 60;
@@ -403,7 +403,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     // Skylling
     reguleringsventilSkyll(reguleringaapning);
     mellomstegsventil(mellomstegaapning);
-    if ((menuNav == 6)||(getPumpCurrent < pumpeTerskel)){     // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
+    if ((menuNav == 6)||(skyllFerdig&&(getPumpCurrent < pumpeTerskel))){     // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
       //if (skyllFerdig) {
       Steg = 7;
       SendSteg();

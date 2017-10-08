@@ -2,7 +2,7 @@ byte button; //Trykknapp for pumpa
 byte oldbutton = 1;
 byte buttonpin = 3;
 int pumpePin = 31;
-int currentPin = 2;
+int currentPin = 4;
 unsigned long pumpeStartTime;
 
 
