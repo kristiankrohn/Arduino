@@ -31,8 +31,8 @@ void getCANmessage() {
 
       analog_mesktemp = CANbuf[0];
       analog_mesktemp |= CANbuf[1] << 8;
-      mellomstegTom = bool(CANbuf[2]);
-      mesketankTom = bool(CANbuf[3]);
+      mellomstegTom = bool(CANbuf[3]);
+      mesketankTom = bool(CANbuf[2]);
       //Serial.println(analog_mesktemp);
     }
     else if (CAN.getCanId() == 0x20) {

@@ -67,15 +67,19 @@ void init_varmereg() {
 }
 
 void varmeReg() {
-  if ((Steg != 0)&&(digitalRead(floatSwitch) == false)) {
+  int floatsw = digitalRead(floatSwitch);
+  if (Steg != 0) {
     if ((Now - varmeStartTime) > 10000) { //time to shift the Relay Window
-      if (Setpoint >= Input) {
+      if ((Setpoint >= Input) && !floatsw) {
         digitalWrite(varmePin, LOW); // Aktiv lav
       }
       else {
         digitalWrite(varmePin, HIGH);
       }
       varmeStartTime += 10000;
+    }
+    else if(floatsw){
+      digitalWrite(varmePin, HIGH);
     }
   }
   else {

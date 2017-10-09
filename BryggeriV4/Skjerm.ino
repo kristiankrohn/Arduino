@@ -179,8 +179,11 @@ void writeSkjermbuffer() {
           else if (menuPos == 2) {
             screen = 44;
           }
+          else if (menuPos == 3) {
+            screen = 46;
+          }
         }
-        else if (screen == 41){
+        else if (screen == 41) {
           EEPROMWriteInt(pumpeTerskelAddr, pumpeTerskel);
         }
         else if (screen == 42) { //Regvent
@@ -231,6 +234,9 @@ void writeSkjermbuffer() {
         else if (screen == 44) {
           screen = 40;
         }
+        else if (screen == 46) {
+          screen = 40;
+        }
         else {
           screen--;
         }
@@ -257,14 +263,25 @@ void writeSkjermbuffer() {
     case 2: {
         String meskeTidString = String(mesketid);
         printString(String("Mesketid = " + meskeTidString), 1);
-        mesketid = changeVariableTens(mesketid);
+        if (mesketid <= 10) {
+          mesketid = changeVariable(mesketid);
+        }
+        else {
+          mesketid = changeVariableTens(mesketid);
+        }
       }
       break;
 
     case 3: {
         String kokeTidString = String(koketid);
         printString(String("Koketid = " + kokeTidString), 1);
-        koketid = changeVariableTens(koketid);
+        if (koketid <= 10) {
+          koketid = changeVariable(koketid);
+        }
+        else {
+          koketid = changeVariableTens(koketid);
+
+        }
       }
       break;
 
@@ -302,6 +319,8 @@ void writeSkjermbuffer() {
         }
         else if (Steg == 1) {
           stringSteg = String("Fyller vann: " + String(koketankvolum));
+          String flowstring = String(flowperminute);
+          printString(String("Flowrate : " + flowstring + "L/min"), 3);
         }
         else if (Steg == 2) {
           stringSteg = String("Varmer vann til: " + String(analogToCelcius(striketemp)));
@@ -322,10 +341,14 @@ void writeSkjermbuffer() {
           printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 6) {
-          stringSteg = "Skylling, entr fr nxt";
+          String pumpestrom = String(getPumpCurrent());
+          stringSteg = String("Skylling " + pumpestrom);
+          String TimerTimer = String(timer.getCurrentTime());
+          printString(String("Timer: " + TimerTimer), 3);
         }
         else if ((Steg <= 10) && (Steg >= 7)) {
-          stringSteg = "Avrenning";
+          String stringstringSteg = String(Steg);
+          stringSteg = String("Avrenning " + stringstringSteg);
           String TimerTimer = String(timer.getCurrentTime());
           printString(String("Timer: " + TimerTimer), 3);
         }
@@ -343,9 +366,9 @@ void writeSkjermbuffer() {
         Start = true;
         printString(stringSteg, 0);
         String mesketemp = String(analogToCelcius(analog_mesktemp));
-        printString(String("Mesketemperatur: " + mesketemp), 1);
+        printString(String("Mesktemp: " + mesketemp), 1);
         String koketemp = String(analogToCelcius(koktemp()));
-        printString(String("Koketemperatur: " + koketemp), 2);
+        printString(String("Koketemp: " + koketemp), 2);
 
       }
       break;
@@ -391,11 +414,13 @@ void writeSkjermbuffer() {
       }
       break;
     case 35: {
-        man_volum = man_tick / flowmeterkonstant;
+        man_volum = man_tick * flowmeterkonstant;
         String manvolum = String(man_volum);
         String mantick = String(man_tick);
         printString(String("Volum: " + manvolum), 1);
         printString(String("Ticks: " + mantick), 2);
+        String flowstring = String(flowperminute);
+        printString(String("Flowrate : " + flowstring + "L/min"), 3);
       }
       break;
     case 37: {
@@ -408,15 +433,16 @@ void writeSkjermbuffer() {
       }
       break;
     case 40: {
-        printString("Analog 0", 0);
+        printString("Pumpe", 0);
         printString("Reguleringsventil", 1);
         printString("Mellomstegsventil", 2);
+        printString("Temperatur", 3);
         printArrow();
 
       }
       break;
     case 41: {
-        
+
         String analog0 = String(getPumpCurrent());
         printString(String("Analog 0(mA) = " + analog0), 1);
         pumpeTerskel = changeVariableTens(pumpeTerskel);
@@ -450,6 +476,14 @@ void writeSkjermbuffer() {
         printString("Mellomstg Saved", 1);
       }
       break;
+    case 46: {
+        String mesk  = String(analog_mesktemp);
+        String koktoppstring = String(analog_koktopptemp);
+        String kokbunnstring = String(analog_kokbunntemp);
+        printString(String("Mesk : " + mesk), 0);
+        printString(String("KokTopp : " + koktoppstring), 1);
+        printString(String("KokBunn : " + kokbunnstring), 2);
+      }
   }
 
   if (screen == 32) {

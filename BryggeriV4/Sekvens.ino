@@ -6,7 +6,7 @@ bool avrenningFerdig = false;
 bool luftingFerdig = false;
 unsigned long startTid;
 unsigned long delayTid;
-
+unsigned long oldtick;
 
 void TimerInit() {
   timer.setCounter(0, 0, 1, timer.COUNT_DOWN, timerComplete);
@@ -55,8 +55,12 @@ void TimerReset() {
 
 void print_time2() //Fjern etter testing
 {
-  //Serial.print("Tiden er: ");
-  //Serial.println(timer.getCurrentTime());
+  //kjøres hvert sekund
+  if (Steg == 1){
+    unsigned long tickdifference = tick - oldtick;
+    flowperminute = (tickdifference * 60) * flowmeterkonstant;
+    oldtick = tick;
+  }
 }
 
 void setupSteg(int nxtSteg) {
@@ -276,7 +280,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
 
   else if ((Steg == 1) && (Start == true)) {
     //Fyller vann i koketanken
-    koketankvolum = tick / flowmeterkonstant; //148,15 tics/L
+    koketankvolum = tick * flowmeterkonstant; //148,15 tics/L
 
     if (koketankvolum >= (meskevolum + skyllevolum)) { //Når koketankvolum = meskevolum + skyllevolum
 
@@ -368,10 +372,14 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     //Mesking
     reguleringsventil(MeskSet);
     int m = (int)timer.getCurrentMinutes();
-    /*if (m < 14) { // Setter setpunkt til mashout
-      Serial.println(m);
+    if (m  == 1) { // Setter setpunkt til mashout
+      //Serial.println(m);
       //MeskSet = MeskSet; //Skylletemp
-      }*/
+      init_reguleringsventil();
+    }
+    else if(m == 0){
+      lukkeRegvent();
+    }
 
     if (meskFerdig) {
       Steg = 6;
@@ -380,7 +388,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       Pumpe = true;
       //Oppsett av timer for skylling.
       int t2 = 0, i2 = 0;
-      int skylletid = 10;
+      int skylletid = 30;
       //skylletid = (int)(skyllevolum * pumpekonstant);
 
       if (skylletid >= 60) {
@@ -403,7 +411,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     // Skylling
     reguleringsventilSkyll(reguleringaapning);
     mellomstegsventil(mellomstegaapning);
-    if ((menuNav == 6)||(skyllFerdig&&(getPumpCurrent < pumpeTerskel))){     // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
+    if ((menuNav == 6)||(skyllFerdig&&(getPumpCurrent() < pumpeTerskel))){     // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
       //if (skyllFerdig) {
       Steg = 7;
       SendSteg();

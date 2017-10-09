@@ -166,9 +166,11 @@ void ventil() {
 
       if (digitalRead(mellomsteg_knapp) == false) {
         digitalWrite(mellomstegretning, LOW);
+        //Serial.println("Mellomsteg low");
       }
       else {
         digitalWrite(mellomstegretning, HIGH);
+        //Serial.println("Mellomsteg high");
       }
     }
   }

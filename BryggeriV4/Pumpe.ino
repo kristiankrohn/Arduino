@@ -5,11 +5,21 @@ int pumpePin = 31;
 int currentPin = 4;
 unsigned long pumpeStartTime;
 
+const int numReadings = 200;
 
-void PumpeInit(){
-    pinMode(buttonpin, INPUT_PULLUP); //Pumpeknapp
-    pinMode(pumpePin, OUTPUT);
-    digitalWrite(pumpePin, HIGH);
+int readings[numReadings];      // the readings from the analog input
+int readIndex = 0;              // the index of the current reading
+int total = 0;                  // the running total
+int average = 0;                // the average
+
+
+void PumpeInit() {
+  pinMode(buttonpin, INPUT_PULLUP); //Pumpeknapp
+  pinMode(pumpePin, OUTPUT);
+  digitalWrite(pumpePin, HIGH);
+  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
+    readings[thisReading] = 0;
+  }
 }
 
 void init_pulsepumpe() {
@@ -56,7 +66,25 @@ void pumpe() {
 }
 
 int getPumpCurrent() {
-  int RawValue = analogRead(currentPin);
-  float Current = (RawValue * 5.0 )/ 1.024;
+  total = total - readings[readIndex];
+  // read from the sensor:
+  readings[readIndex] = analogRead(currentPin);
+  // add the reading to the total:
+  total = total + readings[readIndex];
+  // advance to the next position in the array:
+  readIndex = readIndex + 1;
+
+  // if we're at the end of the array...
+  if (readIndex >= numReadings) {
+    // ...wrap around to the beginning:
+    readIndex = 0;
+  }
+
+  // calculate the average:
+  average = total / numReadings;
+
+
+  //int RawValue = analogRead(currentPin);
+  float Current = (average * 5.0 ) / 1.024;
   return int(Current);
 }

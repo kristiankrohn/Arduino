@@ -38,7 +38,8 @@ int mesketid = 60;
 int koketid = 60;
 int avrenningstid = 15; //Minutter
 const float pumpekonstant = 10.5; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
-const int flowmeterkonstant = 140.5;
+const float flowmeterkonstant = 0.007117;
+//const float flowmeterkonstant = 0.00046;
 int MeskSet;
 int mellomstegaapning;
 int reguleringaapning;
@@ -52,6 +53,7 @@ int analog_kokbunntemp;
 int pumpeTerskel;
 int pumpeTerskelAddr = 6;
 unsigned char flagRecv = 0;
+float flowperminute;
 
 //This function will write a 2 byte integer to the eeprom at the specified address and address + 1
 void EEPROMWriteInt(int p_address, int p_value)
@@ -104,7 +106,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   CanBusInit();
   init_ventilasjon();
   //MeskSet = celciusToAnalog(67);
-
+  sei();
 }
 
 void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN       MAIN
