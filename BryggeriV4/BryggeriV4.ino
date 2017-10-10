@@ -136,10 +136,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
     lokk();
     windowStartTime += 500;
     //Serial.println(getPumpCurrent());
-    SendTimeandTemp();
-    if(Steg == 1){
-      SendTick();
-    }
+
   }
   if (Now - longwindowStartTime > 1000){
     flowfunction();

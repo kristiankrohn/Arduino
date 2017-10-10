@@ -13,5 +13,6 @@ void flowtick() { //Interrupt Service Routine for flowmeter
 void flowfunction() {
   unsigned long tickdifference = tick - oldtick;
   flowperminute = (tickdifference * 60) * flowmeterkonstant;
+  flowperminute = constrain(flowperminute, 0, 100);
   oldtick = tick;
 }

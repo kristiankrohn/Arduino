@@ -2,7 +2,7 @@
 #include <SPI.h>
 #include <mcp_can.h>
 
-const int resetpin = 7;
+int resetpin = 7;
 int fbTick, sbTick, tbTick, fobTick;
 long now;
 long lastblink;
@@ -98,11 +98,12 @@ void GetMessage() {
 void restart() {
   Serial.println("initiating resetsequence");
   resetcount++;
-  cli();
+  
   digitalWrite(resetpin, LOW);
   delay(1000);
   digitalWrite(resetpin, HIGH);
   //delay(5000);
+  detachInterrupt(digitalPinToInterrupt(2));
   while ((CAN_MSGAVAIL != CAN.checkReceive()) && (CAN.getCanId() != 0));
 
   unsigned char stmp[8] = {meskevolum, skyllevolum, mesketid, koketid, MeskSet, Steg, MeskSetHB, 0};
@@ -119,7 +120,7 @@ void restart() {
     Serial.println(stp[i]);
   }
   //delay(10000);
-  sei();
+  attachInterrupt(digitalPinToInterrupt(2), MCP2515_ISR, LOW); // start interrupt
   recievedmessage = millis() + 10000;
 }
 
@@ -178,8 +179,9 @@ void manualreset() {
 }
 void setup() {
 
-  digitalWrite(resetpin, HIGH);
+  
   pinMode(resetpin, OUTPUT);
+  digitalWrite(resetpin, HIGH);
   pinMode(onOffSwitch, INPUT_PULLUP);
   pinMode(testRecovery, INPUT_PULLUP);
   pinMode(resetIndicator, OUTPUT);

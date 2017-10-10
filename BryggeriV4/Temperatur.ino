@@ -35,7 +35,7 @@ int Setpunkt() {
     Setpunkt = striketemp;
   }
 
-  if (Steg == 2) {
+  else if (Steg == 2) {
     Setpunkt = striketemp;
   }
 
