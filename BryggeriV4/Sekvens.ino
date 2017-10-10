@@ -6,7 +6,7 @@ bool avrenningFerdig = false;
 bool luftingFerdig = false;
 unsigned long startTid;
 unsigned long delayTid;
-unsigned long oldtick;
+
 
 void TimerInit() {
   timer.setCounter(0, 0, 1, timer.COUNT_DOWN, timerComplete);
@@ -56,12 +56,9 @@ void TimerReset() {
 void print_time2() //Fjern etter testing
 {
   //kjøres hvert sekund
-  if (Steg == 1){
-    unsigned long tickdifference = tick - oldtick;
-    flowperminute = (tickdifference * 60) * flowmeterkonstant;
-    oldtick = tick;
-  }
+
 }
+
 
 void setupSteg(int nxtSteg) {
 

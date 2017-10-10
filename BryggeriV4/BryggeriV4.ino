@@ -38,7 +38,8 @@ int mesketid = 60;
 int koketid = 60;
 int avrenningstid = 15; //Minutter
 const float pumpekonstant = 10.5; //Sek/Liter 9min og 30sek for 40L = 570sek/40L =
-const float flowmeterkonstant = 0.007117;
+//const float flowmeterkonstant = 0.007117;
+const float flowmeterkonstant = 0.006578;
 //const float flowmeterkonstant = 0.00046;
 int MeskSet;
 int mellomstegaapning;
@@ -140,11 +141,12 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
       SendTick();
     }
   }
-  if (Now - longwindowStartTime > 1200){
+  if (Now - longwindowStartTime > 1000){
+    flowfunction();
     SendTimeandTemp();
     if(Steg == 1){
       SendTick();
     }
-    longwindowStartTime += 1200;    
+    longwindowStartTime += 1000;    
   }
 }

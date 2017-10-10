@@ -319,8 +319,8 @@ void writeSkjermbuffer() {
         }
         else if (Steg == 1) {
           stringSteg = String("Fyller vann: " + String(koketankvolum));
-          String flowstring = String(flowperminute);
-          printString(String("Flowrate : " + flowstring + "L/min"), 3);
+          String flowstring = String(flowperminute, 2);
+          printString(String("Flowrate: " + flowstring + "L/min"), 3);
         }
         else if (Steg == 2) {
           stringSteg = String("Varmer vann til: " + String(analogToCelcius(striketemp)));
@@ -419,8 +419,8 @@ void writeSkjermbuffer() {
         String mantick = String(man_tick);
         printString(String("Volum: " + manvolum), 1);
         printString(String("Ticks: " + mantick), 2);
-        String flowstring = String(flowperminute);
-        printString(String("Flowrate : " + flowstring + "L/min"), 3);
+        String flowstring = String(flowperminute, 2);
+        printString(String("Flowrate: " + flowstring + "L/min"), 3);
       }
       break;
     case 37: {
