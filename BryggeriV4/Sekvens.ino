@@ -537,6 +537,18 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     // Nedkjøling
 
     if (Input < pitchtemp) { //Input == koketanktemp
+      Steg = 14;
+      SendSteg();
+      //Serial.println("Ferdig!");
+      //TimerReset();
+      //Start = false;
+
+      //screen = 0;
+    }
+  }
+
+  else if (Steg == 14){
+    if(menuNav == 6){
       Steg = 0;
       SendSteg();
       Serial.println("Ferdig!");
@@ -546,7 +558,6 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       screen = 0;
     }
   }
-
   /* else{
      Steg = 0;
      Serial.println("Steg 0");

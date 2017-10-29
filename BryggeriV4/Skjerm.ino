@@ -363,6 +363,9 @@ void writeSkjermbuffer() {
         else if (Steg == 13) {
           stringSteg = "Nedkjøling";
         }
+        else if (Steg == 14) {
+          stringSteg = "Ferdig, enter for exit";
+        }
         Start = true;
         printString(stringSteg, 0);
         String mesketemp = String(analogToCelcius(analog_mesktemp));

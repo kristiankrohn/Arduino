@@ -106,6 +106,7 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   TimerInit();
   CanBusInit();
   init_ventilasjon();
+  notifierInit();
   //MeskSet = celciusToAnalog(67);
   sei();
 }
@@ -139,8 +140,9 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
 
   }
   if (Now - longwindowStartTime > 1000){
-    flowfunction();
+    flowfunction(); // må ha periodetid på 1sek - alternativt skriv om funksjon
     SendTimeandTemp();
+    notifier();
     if(Steg == 1){
       SendTick();
     }
