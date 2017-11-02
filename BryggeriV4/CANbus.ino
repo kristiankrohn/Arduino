@@ -3,6 +3,7 @@
 unsigned char CANbuf[8];
 const int SPI_CS_PIN = 49;
 MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
+int tempSteg;
 
 void CanBusInit() {
   while (CAN_OK != CAN.begin(CAN_1000KBPS))              // init can bus : baudrate = 500k
@@ -26,7 +27,7 @@ void getCANmessage() {
   while (CAN_MSGAVAIL == CAN.checkReceive()) {
     unsigned char len = 0;
     CAN.readMsgBuf(&len, CANbuf);
-
+    
     if (CAN.getCanId() == 0) {
 
       analog_mesktemp = CANbuf[0];
@@ -42,7 +43,7 @@ void getCANmessage() {
       mesketid = CANbuf[2];
       koketid = CANbuf[3];
       MeskSet = CANbuf[4];
-      Steg = CANbuf[5];
+      tempSteg = CANbuf[5];
       MeskSet |= CANbuf[6] << 8;
       for (int i = 0; i < 8; i++) {
         Serial.println(CANbuf[i]);
@@ -63,6 +64,7 @@ void getCANmessage() {
       Start = bool(CANbuf[3]);
       Serial.print("Start: ");
       Serial.println(CANbuf[3]);
+      Steg = tempSteg;
       if (Start == true) {
         screen = 7;
         if ((Steg == 2) || (Steg == 3) || (Steg == 5) || (Steg == 6) || (Steg == 10) || (Steg == 11) || (Steg == 12)) {
@@ -130,4 +132,5 @@ void SendTimeandTemp() {
   CAN.sendMsgBuf(0x01, 0, 8, stmp);
 
 }
+
 

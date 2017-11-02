@@ -55,7 +55,7 @@ void TimerReset() {
 
 void print_time2() //Fjern etter testing
 {
-  //kjøres hvert sekund
+  //kjÃ¸res hvert sekund
 
 }
 
@@ -263,7 +263,7 @@ void setupSteg(int nxtSteg) {
 
 void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS          SEKVENS          SEKVENS
   if (Steg == 0) {
-    //Venter på startsignal
+    //Venter pÃ¥ startsignal
     if (Start == true) {
       Steg = 1;
       tick = 0;
@@ -271,6 +271,8 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
       //striketemp = MeskSet + 40;
       Serial.println("Steg 1");
       SendStartBrew();
+      startTid = millis();
+      notifierSet();
     }
   }
 
@@ -278,8 +280,22 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   else if ((Steg == 1) && (Start == true)) {
     //Fyller vann i koketanken
     koketankvolum = tick * flowmeterkonstant; //148,15 tics/L
+    if (flowperminute > 8){
+      alarm = true;
+      alarmString1 = "Overfilling";
+      alarmString2 = "Lower waterpreassure";
+    }
+    else if ((flowperminute < 8) && (menuNav == 6)){
+      alarm = false;
+    }
 
-    if (koketankvolum >= (meskevolum + skyllevolum)) { //Når koketankvolum = meskevolum + skyllevolum
+    
+    if ((Now - startTid) > 3000){
+      notifierReset();
+    }
+
+    
+    if (koketankvolum >= (meskevolum + skyllevolum)) { //NÃ¥r koketankvolum = meskevolum + skyllevolum
 
       Serial.println("Steg 2");
 
@@ -408,7 +424,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     // Skylling
     reguleringsventilSkyll(reguleringaapning);
     mellomstegsventil(mellomstegaapning);
-    if ((menuNav == 6)||(skyllFerdig&&(getPumpCurrent() < pumpeTerskel))){     // NB! NB! NB! NB! Dette gjør at man må trykke enter for å komme videre i programmet når det er tomt for skyllevann
+    if ((menuNav == 6)||(skyllFerdig&&(getPumpCurrent() < pumpeTerskel))){     // NB! NB! NB! NB! Dette gjÃ¸r at man mÃ¥ trykke enter for Ã¥ komme videre i programmet nÃ¥r det er tomt for skyllevann
       //if (skyllFerdig) {
       Steg = 7;
       SendSteg();
@@ -534,7 +550,7 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
   }
 
   else if ((Steg == 13) && (Start == true)) {
-    // Nedkjøling
+    // NedkjÃ¸ling
 
     if (Input < pitchtemp) { //Input == koketanktemp
       Steg = 14;
@@ -564,4 +580,5 @@ void sekvens() { //SEKVENS          SEKVENS          SEKVENS          SEKVENS   
     }*/
 
 }
+
 

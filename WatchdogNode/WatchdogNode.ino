@@ -104,15 +104,45 @@ void restart() {
   digitalWrite(resetpin, HIGH);
   //delay(5000);
   detachInterrupt(digitalPinToInterrupt(2));
-  while ((CAN_MSGAVAIL != CAN.checkReceive()) && (CAN.getCanId() != 0));
 
+  
+  bool online = false;
+  int newid = 0;
+  unsigned char len = 0;
+  while (!online){
+    while (CAN_MSGAVAIL != CAN.checkReceive());
+    CAN.readMsgBuf(&len, CANbuf);
+    newid = CAN.getCanId();
+    if (newid == 1){
+      online = true;
+    }
+  }
+  Serial.print("Got message with id: ");
+  Serial.println(newid);
+  //while ((CAN_MSGAVAIL != CAN.checkReceive()) && (CAN.getCanId() == 1));
+  //Serial.print("Got message with id: ");
+  //Serial.println(CAN.getCanId());
+  
   unsigned char stmp[8] = {meskevolum, skyllevolum, mesketid, koketid, MeskSet, Steg, MeskSetHB, 0};
   CAN.sendMsgBuf(0x20, 0, 8, stmp);
   for (int i = 0; i < 8; i++) {
     Serial.println(stmp[i]);
   }
-  while ((CAN_MSGAVAIL != CAN.checkReceive()) && (CAN.getCanId() != 0));
+  //while ((CAN_MSGAVAIL != CAN.checkReceive()) && (CAN.getCanId() == 1));
+  online = false;
+  newid = 0;
+  while (!online){
+    while (CAN_MSGAVAIL != CAN.checkReceive());
+    CAN.readMsgBuf(&len, CANbuf);
+    newid = CAN.getCanId();
+    if (newid == 1){
+      online = true;
+    }
+  }
+  Serial.print("Got message with id: ");
+  Serial.println(newid);
 
+  //delay(100);
 
   unsigned char stp[8] = {hours, minutes, seconds, Start, fbTick, sbTick, tbTick, fobTick};
   CAN.sendMsgBuf(0x21, 0, 8, stp);

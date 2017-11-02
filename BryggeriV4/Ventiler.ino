@@ -85,7 +85,7 @@ void lukkeRegventUpower() {
   digitalWrite(regventretning, HIGH);
 }
 
-void reguleringsventil(int mesk_set) {  //Vurder å skrive om til PWM modulert PI reg
+void reguleringsventil(int mesk_set) {  //Vurder Ã¥ skrive om til PWM modulert PI reg
   bool c;
   c = digitalRead(5);
   if (!c) {
@@ -98,7 +98,7 @@ void reguleringsventil(int mesk_set) {  //Vurder å skrive om til PWM modulert P
     if ((Now - ventilStartTime) > 5000) { //time to shift the Relay Window
       ventilStartTime += 5000;
 
-      if (mesk_set >= k) {               //ÅPNE
+      if (mesk_set >= k) {               //Ã…PNE
         digitalWrite(regventretning, LOW);
       }
 
@@ -151,7 +151,7 @@ void lukkemellomstegsventil() {
 void ventil() {
   bool c;
   c = digitalRead(automan_knapp);
-  if (!c) { // Manuell ventilkjøring
+  if (!c) { // Manuell ventilkjÃ¸ring
     digitalWrite(v1, HIGH);
     digitalWrite(v3, HIGH);   //AKTIV LAV
     digitalWrite(v4, HIGH);
@@ -332,7 +332,7 @@ void ventil() {
       digitalWrite(mellomstegretning, HIGH);
     }
 
-    else if (Steg == 13) { //NEDKJØLING
+    else if (Steg == 13) { //NEDKJÃ˜LING
       digitalWrite(v1, HIGH);
       digitalWrite(v3, HIGH);   //AKTIV LAV
       digitalWrite(v4, HIGH);
@@ -363,5 +363,6 @@ void ventil() {
     }
   }
 }
+
 
 

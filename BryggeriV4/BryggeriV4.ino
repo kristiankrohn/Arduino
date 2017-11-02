@@ -32,8 +32,8 @@ int koketankvolum;
 int mesketankvolum;
 int striketemp;
 int skylletemp;
-int pitchtemp = 226; // HUSK Å KALIBRERE DENNE
-int kokepunkt = 990; // HUSK Å KALIBRERE DENNE
+int pitchtemp = 226; // HUSK Ã… KALIBRERE DENNE
+int kokepunkt = 990; // HUSK Ã… KALIBRERE DENNE
 int mesketid = 60;
 int koketid = 60;
 int avrenningstid = 15; //Minutter
@@ -55,7 +55,9 @@ int pumpeTerskel;
 int pumpeTerskelAddr = 6;
 unsigned char flagRecv = 0;
 float flowperminute;
-
+bool alarm = false;
+String alarmString1;
+String alarmString2;
 //This function will write a 2 byte integer to the eeprom at the specified address and address + 1
 void EEPROMWriteInt(int p_address, int p_value)
      {
@@ -92,6 +94,8 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   Wire.begin(8);
   pinMode(4, OUTPUT); // Disable SDcard reader on ethernet shield
   digitalWrite(4, HIGH);
+  notifierInit();
+  notifierSet();
   VariablesInit();
   LokkInit();
   VentilInit();
@@ -106,8 +110,9 @@ void setup() {//SETUP           SETUP           SETUP           SETUP           
   TimerInit();
   CanBusInit();
   init_ventilasjon();
-  notifierInit();
+  
   //MeskSet = celciusToAnalog(67);
+  notifierReset();
   sei();
 }
 
@@ -140,7 +145,7 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
 
   }
   if (Now - longwindowStartTime > 1000){
-    flowfunction(); // må ha periodetid på 1sek - alternativt skriv om funksjon
+    flowfunction(); // mÃ¥ ha periodetid pÃ¥ 1sek - alternativt skriv om funksjon
     SendTimeandTemp();
     notifier();
     if(Steg == 1){
@@ -149,3 +154,4 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
     longwindowStartTime += 1000;    
   }
 }
+

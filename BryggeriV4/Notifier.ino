@@ -1,4 +1,5 @@
 int notifierPin = 33;
+bool notify = false;
 
 void notifierInit(){
   pinMode(notifierPin, OUTPUT);
@@ -7,7 +8,10 @@ void notifierInit(){
 }
 
 void notifier(){
-  if(Steg == 4){
+  if (alarm||notify){
+    digitalWrite(notifierPin, LOW);
+  }
+  else if(Steg == 4){
     digitalWrite(notifierPin, LOW);
   }
   else if(Steg == 14){
@@ -17,4 +21,13 @@ void notifier(){
     digitalWrite(notifierPin, HIGH);
   }
 }
+
+void notifierSet(){
+  notify = true;
+}
+
+void notifierReset(){
+  notify = false;
+}
+
 

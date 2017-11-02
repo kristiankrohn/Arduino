@@ -70,7 +70,7 @@ void menuNavigation() {
 
 
 int analogToCelcius(int analog) {
-  //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
+  //Bruk regresjonsanalyse etter kalibrering for Ã¥ komme fram til polynomfunksjon
   float y2, y1, y0, y;
   float x;
   x = (float)analog;
@@ -83,7 +83,7 @@ int analogToCelcius(int analog) {
 }
 
 int celciusToAnalog(int celcius) {
-  //Bruk regresjonsanalyse etter kalibrering for å komme fram til polynomfunksjon
+  //Bruk regresjonsanalyse etter kalibrering for Ã¥ komme fram til polynomfunksjon
   float y8, y7, y6, y5, y4, y3, y2, y1, y0, y;
   float x;
   x = (float)celcius;
@@ -158,7 +158,7 @@ void writeSkjermbuffer() {
             man_tick = 0;
           }
           else if (menuPos == 3) {
-            screen = 37; // Fjern kommentar for å kunne gå inn i fjerde linje på manuellvalg
+            screen = 37; // Fjern kommentar for Ã¥ kunne gÃ¥ inn i fjerde linje pÃ¥ manuellvalg
           }
         }
         else if (screen == 31) {
@@ -361,18 +361,23 @@ void writeSkjermbuffer() {
           printString(String("Timer: " + TimerTimer), 3);
         }
         else if (Steg == 13) {
-          stringSteg = "Nedkjøling";
+          stringSteg = "NedkjÃ¸ling";
         }
         else if (Steg == 14) {
           stringSteg = "Ferdig, enter for exit";
         }
         Start = true;
         printString(stringSteg, 0);
+        if(alarm){
+          printString(alarmString1, 1);
+          printString(alarmString2, 2);
+        }
+        else{
         String mesketemp = String(analogToCelcius(analog_mesktemp));
         printString(String("Mesktemp: " + mesketemp), 1);
         String koketemp = String(analogToCelcius(koktemp()));
         printString(String("Koketemp: " + koketemp), 2);
-
+        }
       }
       break;
 
@@ -622,4 +627,5 @@ void lcdLoop() {
 
   }
 }
+
 

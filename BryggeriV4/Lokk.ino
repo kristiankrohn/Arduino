@@ -44,3 +44,4 @@ void lokk() {
     digitalWrite(lokkPin, HIGH);
   }
 }
+
