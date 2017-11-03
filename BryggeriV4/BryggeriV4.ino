@@ -145,11 +145,12 @@ void loop() {//MAIN       MAIN       MAIN       MAIN       MAIN       MAIN      
 
   }
   if (Now - longwindowStartTime > 1000){
-    flowfunction(); // mÃ¥ ha periodetid pÃ¥ 1sek - alternativt skriv om funksjon
+    
     SendTimeandTemp();
     notifier();
     if(Steg == 1){
       SendTick();
+      flowfunction(); // mÃ¥ ha periodetid pÃ¥ 1sek - alternativt skriv om funksjon
     }
     longwindowStartTime += 1000;    
   }
